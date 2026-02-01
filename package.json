@@ -1,5 +1,7 @@
 {
   "devDependencies": {
+    "@commitlint/cli": "^20.4.0",
+    "@commitlint/config-conventional": "^20.4.0",
     "semantic-release-preconfigured-conventional-commits": "1.1.149"
   },
   "engines": {
