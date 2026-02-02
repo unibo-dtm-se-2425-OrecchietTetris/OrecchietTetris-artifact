@@ -45,7 +45,7 @@ jobs:
           sleep 60  # aspetta che il pacchetto sia disponibile
           pip install --index-url https://test.pypi.org/simple/ \
                       --extra-index-url https://pypi.org/simple/ \
-                      OrecchietTetris
+                      unibo-dtm-se-2425-OrecchietTetris
           python -c "import OrecchietTetris; print('✓ Import successful')"
 
   # Job 2: Release semantico e pubblicazione su PyPI
