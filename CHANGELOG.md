@@ -1,3 +1,10 @@
+## [0.1.2](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.1.1...v0.1.2) (2026-02-02)
+
+
+### Bug Fixes
+
+* guess that everything's ready, ci/cd included ([776e1cc](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/776e1cc12373bb57f231ce40a3ed0776e73f7147))
+
 # 0.1.1 (2026-02-02)
 
 
