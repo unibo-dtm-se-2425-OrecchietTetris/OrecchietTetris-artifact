@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import List, Any
 
 
@@ -9,6 +11,10 @@ class Subject:
         if observer not in self._observers:
             self._observers.append(observer)
 
+    def detach(self, observer: Observer) -> None:
+        if observer in self._observers:
+            self._observers.remove(observer)
+
     def notify(self, event_type: str, data: Any = None) -> None:
         for observer in self._observers:
             observer.update(event_type, data)
@@ -16,4 +22,4 @@ class Subject:
 
 class Observer:
     def update(self, event_type: str, data: Any) -> None:
-        pass  # Da implementare nelle sottoclassi
+        pass
