@@ -1,11 +1,15 @@
 [tool.poetry]
-name = "template-python-project-poetry"
+name = "OrecchietTetris"
 packages = [
-    { include = "OrecchietTetris-artifact" },
+    { include = "OrecchietTetris" },
 ]
 version = "0.1.0"
-description = "A template for Python projects, using Poetry"
-authors = ["Giovanni Ciatto <giovanni.ciatto@unibo.it>"]
+description = "Tetris with Apulian elements - a Software Engineering project."
+authors = [
+    "Mariagrazia Colonna <mariagrazia.colonna@studio.unibo.it>",
+    "Mirko de Cillis <mirko.decillis@studio.unibo.it>",
+    "Lorenza Pennisi <lorenza.pennisi@studio.unibo.it>",
+]
 license = "Apache 2.0"
 readme = "README.md"
 
