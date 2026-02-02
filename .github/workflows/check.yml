@@ -37,7 +37,9 @@ jobs:
 
       - name: Static Checks
         shell: bash
-        run: poetry run poe mypy
+        run: |
+          poetry run poe mypy
+          poetry run poe flake8
 
       - name: Test with Coverage
         shell: bash
@@ -92,7 +94,7 @@ jobs:
 
   deploy:
     name: Deploy
-    permissions: 
+    permissions:
       contents: write
       packages: write
       id-token: write
