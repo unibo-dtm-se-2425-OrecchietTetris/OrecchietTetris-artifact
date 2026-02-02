@@ -1,3 +1,10 @@
+## [0.1.3](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.1.2...v0.1.3) (2026-02-02)
+
+
+### Bug Fixes
+
+* **deploy:** update new_release variable to publish to PyPI ([4e826a5](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/4e826a55c2080d16ab1ae6ebce6119c571b8e1b8))
+
 ## [0.1.2](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.1.1...v0.1.2) (2026-02-02)
 
 
