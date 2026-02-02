@@ -153,16 +153,14 @@ jobs:
       group: deploy
       cancel-in-progress: false
     outputs:
-      new-release-published: ${{ steps.semantic.outputs.new-release-published }}
-      new-release-version: ${{ steps.semantic.outputs.new-release-version }}
+      new-release-published: ${{ steps.semantic.outputs.new_release_published }}
+      new-release-version: ${{ steps.semantic.outputs.new_release_version }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
-          # Non usare persist-credentials: false
-          # semantic-release deve pushare commit e tag
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -172,32 +170,16 @@ jobs:
       - name: Install Poetry
         run: pip install poetry
 
-      - name: Install dependencies
-        run: poetry install --no-interaction
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '20'
-
-      - name: Install semantic-release
-        run: |
-          npm install -g \
-            semantic-release@^23.0.0 \
-            @semantic-release/changelog@^6.0.0 \
-            @semantic-release/exec@^6.0.0 \
-            @semantic-release/git@^10.0.0
-
-      - name: Configure Git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
       - name: Run semantic-release
         id: semantic
+        uses: cycjimmy/semantic-release-action@v4
+        with:
+          extra_plugins: |
+            @semantic-release/changelog
+            @semantic-release/exec
+            @semantic-release/git
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
 
   publish-pypi:
     name: Publish to PyPI
