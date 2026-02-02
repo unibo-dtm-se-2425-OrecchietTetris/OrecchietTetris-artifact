@@ -1,5 +1,3 @@
-from OrecchietTetris.utils import Observer
+from .TetrisGui import TetrisGui
 
-
-class TetrisGui(Observer):
-    pass
+__all__ = ["TetrisGui"]
