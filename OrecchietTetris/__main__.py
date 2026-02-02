@@ -1,3 +1,3 @@
-import OrecchietTetris-artifact
+import OrecchietTetris
 
-OrecchietTetris-artifact.main()
+OrecchietTetris.main()
