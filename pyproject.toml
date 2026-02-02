@@ -42,16 +42,13 @@ coverage = "coverage run -m unittest discover -v -s tests -p '*.py'"
 coverage-report = "coverage report -m"
 coverage-html = "coverage html"
 mypy = "mypy OrecchietTetris tests"
+flake8 = "flake8 OrecchietTetris tests"
 compile = "python -m compileall OrecchietTetris tests"
+commitlint = "npx commitlint --from=HEAD~1 --to=HEAD"
+hooks = "pre-commit install --hook-type commit-msg"
 
 [tool.poetry.scripts]
 OrecchietTetris = "OrecchietTetris:main"
-lint = "flake8 src"
-typecheck = "mypy src"
-commitlint = "npx commitlint --from=HEAD~1 --to=HEAD"
-hooks = "pre-commit install; pre-commit install --hook-type commit-msg"
-check = "flake8 src; mypy src"
-ci = "flake8 src; mypy src; npx commitlint --from=HEAD~1 --to=HEAD"
 
 [build-system]
 requires = ["poetry-core"]
