@@ -18,7 +18,7 @@ A simple template of Python projects, with a rigid file structure, and predispos
 Overview:
 ```bash
 <root directory>
-├── OrecchietTetris-artifact/             # main package (should be named after your project)
+├── OrecchietTetris/        # main package (should be named after your project)
 │   ├── __init__.py         # python package marker
 │   └── __main__.py         # application entry point
 ├── tests/                  # test package (should contain unit tests)

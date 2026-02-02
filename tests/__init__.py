@@ -1,5 +1,5 @@
 import unittest
-from OrecchietTetris-artifact import MyClass
+from OrecchietTetris import MyClass
 
 
 class TestMyClass(unittest.TestCase):

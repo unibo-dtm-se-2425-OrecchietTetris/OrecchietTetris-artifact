@@ -2,10 +2,10 @@ import logging
 
 
 logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger('OrecchietTetris-artifact')
+logger = logging.getLogger('OrecchietTetris')
 
 # this is the initial module of your app
-# this is executed whenever some client-code is calling `import OrecchietTetris-artifact` or `from OrecchietTetris-artifact import ...`
+# this is executed whenever some client-code is calling `import OrecchietTetris` or `from OrecchietTetris import ...`
 # put your main classes here, eg:
 class MyClass:
     def my_method(self):
@@ -21,4 +21,4 @@ def main():
 
 
 # let this be the last line of this file
-logger.info("OrecchietTetris-artifact loaded")
+logger.info("OrecchietTetris loaded")

@@ -40,7 +40,7 @@ OrecchietTetris = "OrecchietTetris:main"
 lint = "scripts:lint"
 typecheck = "scripts:typecheck"
 commitlint = "scripts:commitlint"
-hooks = "scripts:install_hooks"
+hooks = "OrecchietTetris:scripts:install_hooks"
 check = "scripts:check"
 ci = "scripts:ci"
 
