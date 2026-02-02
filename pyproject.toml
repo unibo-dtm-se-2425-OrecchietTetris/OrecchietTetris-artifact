@@ -3,7 +3,7 @@ name = "OrecchietTetris"
 packages = [
     { include = "OrecchietTetris" },
 ]
-version = "1.0.0"
+version = "0.1.1"
 description = "Tetris with Apulian elements - a Software Engineering project."
 authors = [
     "Mariagrazia Colonna <mariagrazia.colonna@studio.unibo.it>",
