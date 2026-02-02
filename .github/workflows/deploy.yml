@@ -1,68 +1,109 @@
-name: deploy
+name: Deploy
+
 on:
-  workflow_call:
+  push:
+    branches: [main, master]
   workflow_dispatch:
+
 permissions:
   contents: write
-  packages: write
+  id-token: write  # REQUIRED for trusted publishing
+
 jobs:
-  release:
-    name: Release
-    concurrency:
-      # Only one release job at a time. Strictly sequential.
-      group: deploy
+  # Job 1: Test release su TestPyPI
+  test-release:
+    name: Test Release to TestPyPI
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Code
+      - name: Checkout
         uses: actions/checkout@v5
         with:
-          fetch-depth: 0 # all history
+          fetch-depth: 0
 
-      - name: Get All Tags
-        run: git fetch --tags -f
-
-      - name: Dry-run Release for Initial Commit
-        id: skip_release
-        run: |
-          if git rev-parse HEAD^1 >/dev/null 2>&1; then
-            echo "skip=false" >> $GITHUB_OUTPUT
-          else
-            echo "skip=true" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Get Python Version
-        id: get-python-version
-        run: echo version=$(python setup.py get_minimum_python_version | tail -n 1) >> $GITHUB_OUTPUT
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
 
       - name: Install Poetry
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
+          pip install poetry
+          poetry self add poetry-plugin-export
 
-      - name: Restore Development Environment
-        run: poetry install
+      - name: Build package
+        run: poetry build
 
-      # Uncomment to change default logging level during release
-      # - name: Change default logging level
-      #   run: sed -i -e 's/logging.DEBUG/logging.WARN/g' **/*/__init__.py
-
-      - name: Get Node Version
-        id: get-node-version
-        run: echo version=$(jq -r .engines.node package.json) >> $GITHUB_OUTPUT
-
-      - uses: actions/setup-node@v6
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          node-version: ${{ steps.get-node-version.outputs.version }}
+          repository-url: https://test.pypi.org/legacy/
+          skip-existing: true
+          verbose: true
 
-      - name: Release
-        shell: bash
+      - name: Test installation from TestPyPI
         run: |
-          npm install
-          npx semantic-release --branches `git branch --show-current`
+          sleep 60  # aspetta che il pacchetto sia disponibile
+          pip install --index-url https://test.pypi.org/simple/ \
+                      --extra-index-url https://pypi.org/simple/ \
+                      OrecchietTetris
+          python -c "import OrecchietTetris; print('✓ Import successful')"
+
+  # Job 2: Release semantico e pubblicazione su PyPI
+  release:
+    name: Release to PyPI
+    needs: test-release
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy
+      cancel-in-progress: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Poetry
+        run: |
+          pip install poetry
+          poetry self add poetry-plugin-export
+
+      - name: Install dependencies
+        run: poetry install --no-interaction
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+
+      - name: Install semantic-release
+        run: |
+          npm install -g \
+            semantic-release@^23.0.0 \
+            @semantic-release/changelog@^6.0.0 \
+            @semantic-release/exec@^6.0.0 \
+            @semantic-release/git@^10.0.0
+
+      - name: Run semantic-release
         env:
-          PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-          RELEASE_TEST_PYPI: ${{ github.event.repository.is_template || contains(github.repository, 'template') }}
-          # dry run if not on main/master branch, or if initial commit
-          RELEASE_DRY_RUN: ${{ steps.skip_release.outputs.skip == 'true' || (github.ref_name != 'master' && github.ref_name != 'main') }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
+        run: |
+          git config user.name "${GIT_AUTHOR_NAME}"
+          git config user.email "${GIT_AUTHOR_EMAIL}"
+          npx semantic-release
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          verbose: true
