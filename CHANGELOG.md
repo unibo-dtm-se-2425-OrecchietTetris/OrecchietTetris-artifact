@@ -1,3 +1,10 @@
+# [0.2.0](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.1.3...v0.2.0) (2026-03-08)
+
+
+### Features
+
+* **model:** define Tetromino class, shapes and tests ([720ae37](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/720ae378a813614482af4aaa93e39a1e136ebaf2))
+
 ## [0.1.3](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.1.2...v0.1.3) (2026-02-02)
 
 
