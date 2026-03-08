@@ -1,5 +1,5 @@
-from .tetromino import Tetromino
+from .tetromino import Tetromino, ShapeType
 from .board import Board
 from .tetris import Tetris
 
-__all__ = ["Board", "Tetris", "Tetromino"]
+__all__ = ["Board", "Tetris", "Tetromino", "ShapeType"]
