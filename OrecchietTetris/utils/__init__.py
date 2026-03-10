@@ -1,3 +1,3 @@
-from .observer_subject import Subject, Observer
+from .observer_subject import Subject, Observer, EventType
 
-__all__ = ["Subject", "Observer"]
+__all__ = ["Subject", "Observer", "EventType"]
