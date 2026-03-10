@@ -26,8 +26,8 @@ class ITetris(Subject, ABC):
 
     @property
     @abstractmethod
-    def current_piece(self) -> ITetromino:
-        """The falling piece currently controlled by the player."""
+    def current_piece(self) -> Optional[ITetromino]:
+        """The falling piece currently in play, or None before the game starts."""
 
     @property
     @abstractmethod
