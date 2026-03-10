@@ -7,18 +7,18 @@ from OrecchietTetris.model.interfaces import ITetromino
 
 class ShapeType(Enum):
     I_SHAPE = ((1, 1, 1, 1),)
-    O_SHAPE = ((1, 1),
-               (1, 1))
-    T_SHAPE = ((0, 1, 0),
-               (1, 1, 1))
-    S_SHAPE = ((0, 1, 1),
-               (1, 1, 0))
-    Z_SHAPE = ((1, 1, 0),
-               (0, 1, 1))
-    J_SHAPE = ((1, 0, 0),
-               (1, 1, 1))
-    L_SHAPE = ((0, 0, 1),
-               (1, 1, 1))
+    O_SHAPE = ((2, 2),
+               (2, 2))
+    T_SHAPE = ((0, 3, 0),
+               (3, 3, 3))
+    S_SHAPE = ((0, 4, 4),
+               (4, 4, 0))
+    Z_SHAPE = ((5, 5, 0),
+               (0, 6, 6))
+    J_SHAPE = ((7, 0, 0),
+               (7, 7, 7))
+    L_SHAPE = ((0, 0, 8),
+               (8, 8, 8))
 
 
 class Tetromino(ITetromino):
