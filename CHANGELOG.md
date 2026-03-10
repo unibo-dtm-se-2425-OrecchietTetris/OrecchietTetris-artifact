@@ -1,3 +1,18 @@
+# [0.3.0](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.2.0...v0.3.0) (2026-03-10)
+
+
+### Bug Fixes
+
+* change ShapeType number coding for future ui recognition ([7421f52](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/7421f52fb53349e27229a59a19a1f15619fc2483))
+* define event type constants ([69fe789](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/69fe789530fa9c4f3ff7c4c5e3749b799ed5b8f3))
+* define event type constants ([e8b7d11](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/e8b7d11498033253504589b0d26a8f2863dcae05))
+* shapetype definition ([04a8547](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/04a8547e07c581d46bb80021eea7161ab9189920))
+
+
+### Features
+
+* define model interfaces ([0b1e46f](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/0b1e46f643802d5ae1691debbedf9db7cb1f14de))
+
 # [0.2.0](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.1.3...v0.2.0) (2026-03-08)
 
 
