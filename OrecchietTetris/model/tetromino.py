@@ -2,6 +2,8 @@ import random
 from enum import Enum
 from typing import Any
 
+from OrecchietTetris.model.interfaces import ITetromino
+
 
 class ShapeType(Enum):
     I_SHAPE = ((1, 1, 1, 1),)
@@ -19,7 +21,7 @@ class ShapeType(Enum):
                (1, 1, 1))
 
 
-class Tetromino:
+class Tetromino(ITetromino):
     def __init__(self, shape_type: ShapeType = None):
         if shape_type is None:
             shape_type = random.choice(list(ShapeType))
