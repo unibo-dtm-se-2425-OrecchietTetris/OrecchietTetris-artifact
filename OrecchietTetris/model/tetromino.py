@@ -14,11 +14,11 @@ class ShapeType(Enum):
     S_SHAPE = ((0, 4, 4),
                (4, 4, 0))
     Z_SHAPE = ((5, 5, 0),
-               (0, 6, 6))
-    J_SHAPE = ((7, 0, 0),
+               (0, 5, 5))
+    J_SHAPE = ((6, 0, 0),
+               (6, 6, 6))
+    L_SHAPE = ((0, 0, 7),
                (7, 7, 7))
-    L_SHAPE = ((0, 0, 8),
-               (8, 8, 8))
 
 
 class Tetromino(ITetromino):

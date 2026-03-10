@@ -25,12 +25,12 @@ def test_full_rotation_cycle():
 
 @pytest.mark.parametrize("shape_input, expected_output", [
     (ShapeType.I_SHAPE, [[1], [1], [1], [1]]),        # I-shape rotation
-    (ShapeType.O_SHAPE, [[1, 1], [1, 1]]),            # O-shape rotation
-    (ShapeType.T_SHAPE, [[1, 0], [1, 1], [1, 0]]),    # T-shape rotation
-    (ShapeType.S_SHAPE, [[1, 0], [1, 1], [0, 1]]),    # S-shape rotation
-    (ShapeType.Z_SHAPE, [[0, 1], [1, 1], [1, 0]]),    # Z-shape rotation
-    (ShapeType.J_SHAPE, [[1, 1], [1, 0], [1, 0]]),    # J-shape rotation
-    (ShapeType.L_SHAPE, [[1, 0], [1, 0], [1, 1]]),    # L-shape rotation
+    (ShapeType.O_SHAPE, [[2, 2], [2, 2]]),            # O-shape rotation
+    (ShapeType.T_SHAPE, [[3, 0], [3, 3], [3, 0]]),    # T-shape rotation
+    (ShapeType.S_SHAPE, [[4, 0], [4, 4], [0, 4]]),    # S-shape rotation
+    (ShapeType.Z_SHAPE, [[0, 5], [5, 5], [5, 0]]),    # Z-shape rotation
+    (ShapeType.J_SHAPE, [[6, 6], [6, 0], [6, 0]]),    # J-shape rotation
+    (ShapeType.L_SHAPE, [[7, 0], [7, 0], [7, 7]]),    # L-shape rotation
 ])
 def test_rotations(shape_input: ShapeType, expected_output: List[List[int]]) -> None:
     t = Tetromino(shape_input)
