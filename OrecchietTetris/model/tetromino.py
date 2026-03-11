@@ -1,6 +1,6 @@
 import random
 from enum import Enum
-from typing import Any
+from typing import Any, Optional
 
 from OrecchietTetris.model.interfaces import ITetromino
 
@@ -22,7 +22,7 @@ class ShapeType(Enum):
 
 
 class Tetromino(ITetromino):
-    def __init__(self, shape_type: ShapeType = None):
+    def __init__(self, shape_type: Optional[ShapeType] = None) -> None:
         if shape_type is None:
             shape_type = random.choice(list(ShapeType))
         self.__shape_type = shape_type.name

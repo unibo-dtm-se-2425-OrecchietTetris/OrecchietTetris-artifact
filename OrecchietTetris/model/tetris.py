@@ -8,8 +8,9 @@ from OrecchietTetris.utils import EventType
 
 
 # Automatic tick loop timing
-BASE_TICK_INTERVAL: float = 1.0   # seconds at level 1
-MIN_TICK_INTERVAL: float = 0.05   # floor (reached at level 10+)
+BASE_TICK_INTERVAL: float = 1.0     # seconds at level 1
+MIN_TICK_INTERVAL: float = 0.05     # floor (reached at level 10+)
+LEVEL_SPEED_INCREMENT: float = 0.1  # seconds faster per level
 
 # Points awarded per number of lines cleared simultaneously
 _LINE_POINTS = {1: 100, 2: 300, 3: 500, 4: 800}
@@ -137,7 +138,7 @@ class Tetris(ITetris):
     @property
     def tick_interval(self) -> float:
         """Seconds between automatic gravity ticks at the current level."""
-        return max(MIN_TICK_INTERVAL, BASE_TICK_INTERVAL - (self._level - 1) * 0.1)
+        return max(MIN_TICK_INTERVAL, BASE_TICK_INTERVAL - (self._level - 1) * LEVEL_SPEED_INCREMENT)
 
     def play(self) -> None:
         """Start a fresh game and launch the automatic tick loop.
@@ -202,7 +203,8 @@ class Tetris(ITetris):
         if not self.is_running:
             return False
         piece = self._board.current_piece
-        assert piece is not None
+        if piece is None:
+            return False
         piece.rotate()
         if not self._board.is_valid_position(piece, self._board.current_row, self._board.current_col):
             for _ in range(3):
@@ -229,19 +231,16 @@ class Tetris(ITetris):
             return False
 
         piece = self._board.current_piece
-        assert piece is not None
-        fresh = Tetromino(ShapeType[piece.shape_type])
+        if piece is None:
+            return False
+        incoming = self._held_piece
+        self._held_piece = Tetromino(ShapeType[piece.shape_type])
+        self._can_hold = False
+        self.notify(EventType.HOLD_UPDATED, self._held_piece)
 
-        if self._held_piece is None:
-            self._held_piece = fresh
-            self._can_hold = False
-            self.notify(EventType.HOLD_UPDATED, self._held_piece)
+        if incoming is None:
             self._spawn_piece()
         else:
-            incoming = self._held_piece
-            self._held_piece = fresh
-            self._can_hold = False
-            self.notify(EventType.HOLD_UPDATED, self._held_piece)
             spawn_col = self._board.cols // 2 - 1
             self._board.set_falling_piece(incoming, 0, spawn_col)
             if self._board.is_game_over(incoming, spawn_col):
@@ -273,7 +272,8 @@ class Tetris(ITetris):
     def _lock_piece(self) -> None:
         """Place the current piece on the board, clear lines, update score, spawn next piece."""
         piece = self._board.current_piece
-        assert piece is not None
+        if piece is None:
+            return
         self._board.place_tetromino(piece, self._board.current_row, self._board.current_col)
         self._board.clear_falling_piece()
         self._can_hold = True
