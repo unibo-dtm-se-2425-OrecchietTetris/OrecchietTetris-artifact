@@ -241,15 +241,7 @@ class Tetris(ITetris):
         if incoming is None:
             self._spawn_piece()
         else:
-            spawn_col = self._board.cols // 2 - 1
-            self._board.set_falling_piece(incoming, 0, spawn_col)
-            if self._board.is_game_over(incoming, spawn_col):
-                self._running = False
-                self._game_over = True
-                self.notify(EventType.GAME_OVER)
-            else:
-                self.notify(EventType.NEW_PIECE, self._board.current_piece)
-                self.notify(EventType.BOARD_UPDATED)
+            self._spawn_piece(incoming)
 
         return True
 
@@ -288,10 +280,11 @@ class Tetris(ITetris):
 
         self._spawn_piece()
 
-    def _spawn_piece(self) -> None:
-        """Promote next piece to current, generate a new next piece, check game-over."""
-        new_piece = self._next_piece
-        self._next_piece = Tetromino()
+    def _spawn_piece(self, new_piece: Optional[ITetromino] = None) -> None:
+        """Promote piece to current, generate a new next piece, check game-over."""
+        if new_piece is None:
+            new_piece = self._next_piece
+            self._next_piece = Tetromino()
         spawn_col = self._board.cols // 2 - 1
         self._board.set_falling_piece(new_piece, 0, spawn_col)
 

@@ -206,6 +206,13 @@ def test_move_returns_false_when_paused(o_game: Tetris) -> None:
     assert not o_game.move_down()
 
 
+def test_move_returns_false_when_current_piece_is_none(o_game: Tetris) -> None:
+    o_game.board.clear_falling_piece()
+    assert not o_game.move_left()
+    assert not o_game.move_right()
+    assert not o_game.move_down()
+
+
 # ---------------------------------------------------------------------------
 # rotate()
 # ---------------------------------------------------------------------------
@@ -235,6 +242,13 @@ def test_rotate_reverts_when_invalid(monkeypatch: pytest.MonkeyPatch) -> None:
     assert game.current_piece.shape == original_shape
 
 
+def test_no_rotate_when_current_piece_is_none() -> None:
+    game = Tetris()
+    game.start()
+    game.board.clear_falling_piece()
+    assert not game.rotate()
+
+
 def test_rotate_returns_false_when_not_started() -> None:
     assert not Tetris().rotate()
 
@@ -247,6 +261,12 @@ def test_rotate_returns_false_when_paused(i_game: Tetris) -> None:
 # ---------------------------------------------------------------------------
 # shadow_row
 # ---------------------------------------------------------------------------
+
+
+def test_shadow_on_current_piece_none(o_game: Tetris) -> None:
+    o_game.board.clear_falling_piece()
+    assert o_game.shadow_row == 0
+
 
 def test_shadow_row_on_empty_board(o_game: Tetris) -> None:
     # O is 2-tall; last valid top row on a 20-row board = 18
@@ -282,6 +302,14 @@ def test_hard_drop_fills_board_at_shadow_row(o_game: Tetris) -> None:
     assert grid[expected_row][expected_col + 1] == 2
 
 
+def test_no_hard_drop_when_current_piece_is_none(o_game: Tetris) -> None:
+    o_game.board.move_falling_piece(2, 0)
+    o_game.board.clear_falling_piece()
+    o_game.hard_drop()
+    assert o_game.board.current_row == 2
+    assert o_game.current_piece is None
+
+
 def test_hard_drop_spawns_new_piece(o_game: Tetris) -> None:
     o_game.hard_drop()
     assert o_game.current_row == 0
@@ -307,6 +335,26 @@ def test_hold_first_use_stores_piece(o_game: Tetris) -> None:
 def test_hold_first_use_spawns_new_piece(o_game: Tetris) -> None:
     o_game.hold()
     assert o_game.current_row == 0
+
+
+def test_cannot_hold_when_current_piece_is_none(o_game: Tetris) -> None:
+    o_game.board.clear_falling_piece()
+    assert not o_game.hold()
+    assert o_game.held_piece is None
+
+
+def test_game_over_on_hold(o_game: Tetris) -> None:
+    o_game.hold()
+    spawn_col = o_game.board.cols // 2 - 1
+    for r in [0, 1]:
+        o_game._board._grid[r][spawn_col] = 1
+        o_game._board._grid[r][spawn_col + 1] = 1
+    # Lock current piece far from spawn to trigger _spawn_piece
+    o_game._board._current_row = 18
+    o_game._board._current_col = 0
+    o_game._lock_piece()
+    assert o_game.is_game_over
+    assert not o_game.is_running
 
 
 def test_hold_stores_piece_in_original_orientation(o_game: Tetris) -> None:
@@ -427,6 +475,16 @@ def test_hard_drop_fires_board_updated(o_game: Tetris, observer: MockObserver) -
     o_game.attach(observer)
     o_game.hard_drop()
     assert EventType.BOARD_UPDATED in observer.event_types()
+
+
+def test_detached_observer_does_not_receive_event(o_game: Tetris, observer: MockObserver) -> None:
+    o_game.attach(observer)
+    o_game.hard_drop()
+    assert EventType.BOARD_UPDATED in observer.event_types()
+    o_game.detach(observer)
+    observer.events = []
+    o_game.hard_drop()
+    assert EventType.BOARD_UPDATED not in observer.event_types()
 
 
 # ---------------------------------------------------------------------------

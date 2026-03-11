@@ -263,10 +263,19 @@ def test_set_falling_piece_updates_properties(board: Board, o_piece: Tetromino) 
 
 def test_move_falling_piece_updates_position(board: Board, o_piece: Tetromino) -> None:
     board.set_falling_piece(o_piece, 0, 0)
-    board.move_falling_piece(5, 7)
+    moved = board.move_falling_piece(5, 7)
+    assert moved
     assert board.current_row == 5
     assert board.current_col == 7
     assert board.current_piece is o_piece
+
+
+def test_move_when_current_piece_is_none(board: Board) -> None:
+    moved = board.move_falling_piece(5, 7)
+    assert not moved
+    assert board.current_piece is None
+    assert board.current_row == 0
+    assert board.current_col == 0
 
 
 def test_clear_falling_piece_removes_piece(board: Board, o_piece: Tetromino) -> None:

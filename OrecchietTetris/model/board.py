@@ -1,6 +1,5 @@
 from typing import Optional
 
-from OrecchietTetris.model import Tetromino
 from OrecchietTetris.model.interfaces import IBoard, ITetromino
 
 ROWS = 20
@@ -14,7 +13,7 @@ class Board(IBoard):
         self._rows = rows
         self._cols = cols
         self._grid: list[list[int]] = [[0] * cols for _ in range(rows)]
-        self._current_piece: Optional[ITetromino] = Tetromino()
+        self._current_piece: Optional[ITetromino] = None
         self._current_row: int = 0
         self._current_col: int = 0
 
