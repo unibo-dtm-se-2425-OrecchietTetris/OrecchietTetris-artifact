@@ -1,3 +1,10 @@
+## [0.3.2](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.3.1...v0.3.2) (2026-03-11)
+
+
+### Bug Fixes
+
+* **devops:** add configuration to Dependabot ([8a6e773](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/8a6e773a7be74a3b9c998e7a9a1437b825489029))
+
 ## [0.3.1](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.3.0...v0.3.1) (2026-03-10)
 
 
