@@ -263,11 +263,10 @@ class Tetris(ITetris):
         piece = self._board.current_piece
         if piece is None:
             return False
-        if self._board.is_valid_position(piece, new_row, new_col):
-            self._board.move_falling_piece(new_row, new_col)
+        is_valid_move = self._board.move_falling_piece(new_row, new_col)
+        if is_valid_move:
             self.notify(EventType.BOARD_UPDATED)
-            return True
-        return False
+        return is_valid_move
 
     def _lock_piece(self) -> None:
         """Place the current piece on the board, clear lines, update score, spawn next piece."""

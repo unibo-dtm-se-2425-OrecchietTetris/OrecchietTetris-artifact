@@ -44,7 +44,7 @@ class IBoard(ABC):
         """Set the current falling piece and its position."""
 
     @abstractmethod
-    def move_falling_piece(self, row: int, col: int) -> None:
+    def move_falling_piece(self, row: int, col: int) -> bool:
         """Update the position of the current falling piece without changing the piece."""
 
     @abstractmethod
