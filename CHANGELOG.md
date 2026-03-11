@@ -1,3 +1,18 @@
+# [0.4.0](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.3.2...v0.4.0) (2026-03-11)
+
+
+### Features
+
+* **model:** implement Board class ([4cce391](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/4cce39134dd03c799e89cac221b2f22a16e93886))
+* **model:** implement Tetris class ([6e1f41f](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/6e1f41fb05cda00d295a4397e2d89166b94447b4))
+
+
+### Performance Improvements
+
+* check if piece movement is valid in move method ([384b241](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/384b2418831219a15c1400e2316b3e57896932dc))
+* improve code optimization ([a21fb06](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/a21fb061fc975038bd349427b29fff63bf819fe0))
+* **test:** increase test coverage ([2b69f61](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/2b69f61d97f35892e47d2655db38a8900f343f85))
+
 ## [0.3.2](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.3.1...v0.3.2) (2026-03-11)
 
 
