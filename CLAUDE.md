@@ -12,7 +12,7 @@ An exact copy of the Tetris game, with Apulian elements. Built as a Software Eng
 ```bash
 pip install -r requirements.txt   # install Poetry
 poetry install                    # install all dependencies
-npm install                       # install semantic-release globally (for releases)
+npm install                       # install semantic-release and commitlint (for releases)
 poetry run poe hooks              # install pre-commit hooks (commit-msg linting)
 ```
 
@@ -42,20 +42,29 @@ python -m OrecchietTetris         # run as module
 The project follows a Model-View (Observer pattern) architecture with abstract interfaces for dependency inversion.
 
 - **`OrecchietTetris/model/`** — game logic
-  - `interfaces.py`: `ITetromino`, `IBoard`, `ITetris` — abstract base classes. `ITetris` inherits from `Subject` (observer support is part of the contract), so concrete classes only need `class Tetris(ITetris)`.
-  - `tetromino.py`: `ShapeType` enum (I, O, T, S, Z, J, L shapes as 2D tuples) and `Tetromino(ITetromino)` with `rotate()`.
-  - `board.py`: `Board(IBoard)` — pure grid engine. Handles collision detection (`is_valid_position`), locking pieces (`place_tetromino`), line clearing (`clear_lines`), and game-over detection. No observer logic.
-  - `tetris.py`: `Tetris(ITetris)` — game orchestrator. Owns `Board`, current/next/held `Tetromino`, position, score, level. Fires observer events (string constants defined at top of file) on every state change. Key features: `shadow_row` (ghost piece), `hold()` (hold slot, once per piece), `hard_drop()`, `rotate()` with auto-revert, `play()`/`stop()` for the background tick loop.
+  - `interfaces/` — abstract base classes split into separate files:
+    - `itetromino.py`: `ITetromino` — `shape_type` (str), `shape` (2D list), `rotate()`
+    - `iboard.py`: `IBoard` — `rows`, `cols`, `grid`, `is_valid_position()`, `place_tetromino()`, `clear_lines()`, `is_game_over()`, `reset()`
+    - `itetris.py`: `ITetris(Subject, ABC)` — full game orchestrator contract; board/piece state, score/level, game-flow actions (`start`, `pause`, `resume`, `tick`), player actions (`move_left`, `move_right`, `move_down`, `rotate`, `hard_drop`, `hold`), automatic loop (`play`/`stop`).
+  - `tetromino.py`: `ShapeType` enum (I, O, T, S, Z, J, L shapes as numbered 2D tuples, e.g. `I_SHAPE = ((1, 1, 1, 1),)`) and `Tetromino(ITetromino)` with `rotate()` (transpose/reverse).
+  - `board.py`: `Board(IBoard)` — **stub, not yet implemented**.
+  - `tetris.py`: `Tetris(ITetris)` — **stub, not yet implemented**.
 
 - **`OrecchietTetris/utils/`** — shared utilities
-  - `observer_subject.py`: `Subject` and `Observer` base classes. `Subject.notify(event_type, data)` calls `observer.update(event_type, data)` on all attached observers.
+  - `observer_subject.py`: `Subject`, `Observer` base classes, and `EventType` enum. `Subject.notify(event_type, data)` calls `observer.update(event_type, data)` on all attached observers. `EventType` values: `BOARD_UPDATED`, `NEW_PIECE`, `LINES_CLEARED`, `SCORE_UPDATED`, `GAME_OVER`, `PAUSED`, `RESUMED`, `HOLD_UPDATED`.
 
 - **`OrecchietTetris/gui/`** — view layer
-  - `TetrisGui(Observer)`: implements `Observer`; reacts to game events from `Tetris`.
+  - `TetrisGui(Observer)`: **stub, not yet implemented**. Will react to `EventType` events from `Tetris`.
+
+### Implementation status
+- **Fully implemented:** `Tetromino` (shapes + rotation), all interface definitions, observer infrastructure (`Subject`, `Observer`, `EventType`), CI/CD pipeline, linting/type-checking config.
+- **Stubs (not yet implemented):** `Board`, `Tetris`, `TetrisGui`, `main()` entry point.
 
 ### Import hierarchy (no circular dependencies)
 ```
-utils/  ←  interfaces.py  ←  tetromino.py  ←  board.py  ←  tetris.py
+utils/observer_subject.py  ←  model/interfaces/  ←  model/tetromino.py  ←  model/board.py  ←  model/tetris.py
+                                                                                                      ↓
+                                                                                              gui/TetrisGui.py
 ```
 
 ## Conventions
@@ -63,3 +72,5 @@ utils/  ←  interfaces.py  ←  tetromino.py  ←  board.py  ←  tetris.py
 - All public APIs must be fully type-annotated (mypy strict mode is enforced).
 - Commit messages must follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) — `semantic-release` uses them to compute version numbers and publish to PyPI automatically on pushes to `master`.
 - Tests live in `tests/` mirroring the package structure (e.g., `tests/model/` for `OrecchietTetris/model/`).
+- Max line length: 120 characters (flake8).
+- Node.js >= 25 required for npm tooling.
