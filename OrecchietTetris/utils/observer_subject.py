@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import List, Any
+from typing import Any
 
 
 class EventType(Enum):
@@ -18,7 +18,7 @@ class EventType(Enum):
 
 class Subject:
     def __init__(self) -> None:
-        self._observers: List[Observer] = []
+        self._observers: list[Observer] = []
 
     def attach(self, observer: Observer) -> None:
         if observer not in self._observers:
