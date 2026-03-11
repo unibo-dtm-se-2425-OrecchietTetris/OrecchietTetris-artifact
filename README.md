@@ -16,7 +16,7 @@ An exact copy of the Tetris game, with Apulian elements. Built as a Software Eng
 ## Requirements
 
 - Python >= 3.11
-- Node >= 20 and npm >= 10.8 (for semantic-release)
+- Node >= 25 and npm >= 11.11 (for semantic-release)
 - [Poetry](https://python-poetry.org/) (dependency manager)
 
 ## Installation
