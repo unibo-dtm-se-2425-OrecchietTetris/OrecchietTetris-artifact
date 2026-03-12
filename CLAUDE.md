@@ -53,18 +53,43 @@ The project follows a Model-View (Observer pattern) architecture with abstract i
 - **`OrecchietTetris/utils/`** — shared utilities
   - `observer_subject.py`: `Subject`, `Observer` base classes, and `EventType` enum. `Subject.notify(event_type, data)` calls `observer.update(event_type, data)` on all attached observers. `EventType` values: `BOARD_UPDATED`, `NEW_PIECE`, `LINES_CLEARED`, `SCORE_UPDATED`, `GAME_OVER`, `PAUSED`, `RESUMED`, `HOLD_UPDATED`.
 
-- **`OrecchietTetris/gui/`** — view layer
-  - `TetrisGui(Observer)`: **stub, not yet implemented**. Will react to `EventType` events from `Tetris`.
+- **`OrecchietTetris/view/`** — Kivy GUI layer
+  - `interfaces/i_view.py`: `IView(Observer, ABC)` — `show()`, `hide()`, `update(event_type, data)`.
+  - `i18n.py`: `I18n` — runtime EN/IT localization. `t(key)` returns a translated string; `set_language(lang)` switches at runtime.
+  - `block_renderer.py`: `BlockRenderer` — maps cell integers (0–7) to RGBA tuples and image paths. `BLOCK_IMAGES` maps 1–7 → `assets/blocks/<X>.png`.
+  - `menu_screen.py`: `MenuScreen(Screen, IView)` — New Game button + EN/IT language toggle.
+  - `game_screen.py`: `GameScreen(Screen, IView)` — 10×20 board, falling piece, ghost/shadow, next/hold previews, score/level/lines panel, pause button, game-over overlay, keyboard input.
+  - `app.py`: `TetrisApp(App)` — Kivy app; starts on `MenuScreen`, transitions to `GameScreen` on New Game, returns on game-over or back-to-menu.
+
+- **`OrecchietTetris/gui/`** — legacy stub
+  - `TetrisGui(Observer)`: placeholder, superseded by `view/`.
 
 ### Implementation status
-- **Fully implemented:** `Tetromino` (shapes + rotation), all interface definitions, observer infrastructure (`Subject`, `Observer`, `EventType`), CI/CD pipeline, linting/type-checking config.
-- **Stubs (not yet implemented):** `Board`, `Tetris`, `TetrisGui`, `main()` entry point.
+- **Fully implemented:** `Tetromino` (shapes + rotation), all interface definitions (`ITetromino`, `IBoard`, `ITetris`, `IView`), observer infrastructure (`Subject`, `Observer`, `EventType`), complete Kivy view layer (`MenuScreen`, `GameScreen`, `TetrisApp`), `I18n`, `BlockRenderer`, `main()` entry point, CI/CD pipeline, linting/type-checking config.
+- **Stubs (not yet implemented):** `Board`, `Tetris` (model layer — game logic pending).
+
+### Keyboard controls (GameScreen)
+
+| Key | Action |
+|---|---|
+| ← / → | `move_left()` / `move_right()` |
+| ↓ | `move_down()` |
+| ↑ or X | `rotate()` |
+| Space | `hard_drop()` |
+| C | `hold()` |
+| P or Escape | `pause()` / `resume()` |
 
 ### Import hierarchy (no circular dependencies)
 ```
 utils/observer_subject.py  ←  model/interfaces/  ←  model/tetromino.py  ←  model/board.py  ←  model/tetris.py
-                                                                                                      ↓
-                                                                                              gui/TetrisGui.py
+         ↓                           ↓
+  view/interfaces/i_view.py    view/i18n.py
+         ↓
+  view/block_renderer.py
+         ↓
+  view/menu_screen.py  view/game_screen.py
+         ↓
+  view/app.py
 ```
 
 ## Conventions
