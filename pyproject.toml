@@ -27,6 +27,7 @@ classifiers = [
 python = ">= 3.11.0 < 4.0.0"
 poetry = "2.3.2"
 python-i18n = "^0.3.9"
+kivy = "^2.3.1"
 
 [tool.poetry.group.dev.dependencies]
 coverage = "^7.13.4"
