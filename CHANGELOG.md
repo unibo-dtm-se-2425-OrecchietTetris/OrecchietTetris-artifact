@@ -1,3 +1,12 @@
+## [0.7.2](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.7.1...v0.7.2) (2026-03-26)
+
+
+### Bug Fixes
+
+* **game_screen:** add the quit button to end the current game ([79b3f80](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/79b3f80d7601745859b53398953ea7ffba2293a6))
+* **game_screen:** add the try again button to start a new game ([8b1b4d4](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/8b1b4d4e548f7037c78fb3c83ae0a206ccb76095))
+* **menu_screen:** add quit button to exit the application ([7b4797b](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/7b4797bafbd620386b22de1a7264f11651f9aade))
+
 ## [0.7.1](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.7.0...v0.7.1) (2026-03-26)
 
 
