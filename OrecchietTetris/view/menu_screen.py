@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Callable, Optional
 
+import i18n  # type: ignore[import-untyped]
 from kivy.uix.screenmanager import Screen  # type: ignore[import-untyped]
 from kivy.uix.boxlayout import BoxLayout  # type: ignore[import-untyped]
 from kivy.uix.button import Button  # type: ignore[import-untyped]
@@ -11,32 +12,27 @@ from kivy.graphics import Color, Rectangle  # type: ignore[import-untyped]
 
 from OrecchietTetris.utils import EventType
 from OrecchietTetris.view.interfaces import IView
-from OrecchietTetris.view.i18n import I18n
 
 
 class MenuScreen(Screen, IView):
     """Main menu screen.
 
     Shows a *New Game* button and a language toggle (EN / IT).
-    All text is sourced from the ``I18n`` instance so switching the language
+    All text is sourced from ``python-i18n`` so switching the language
     refreshes labels immediately.
 
     Parameters
     ----------
-    i18n:
-        Shared localization instance.
     on_new_game:
         Called (no arguments) when the player presses *New Game*.
     """
 
     def __init__(
         self,
-        i18n: I18n,
         on_new_game: Optional[Callable[[], None]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        self._i18n = i18n
         self._on_new_game = on_new_game
         self._build_ui()
 
@@ -82,7 +78,7 @@ class MenuScreen(Screen, IView):
 
         # New-game button
         self._btn_new_game = Button(
-            text=self._i18n.t("new_game"),
+            text=i18n.t("new_game"),
             font_size="28sp",
             size_hint=(0.5, 0.15),
             pos_hint={"center_x": 0.5},
@@ -97,7 +93,7 @@ class MenuScreen(Screen, IView):
                              pos_hint={"center_x": 0.5}, spacing=10)
 
         lang_label = Label(
-            text=self._i18n.t("language") + ":",
+            text=i18n.t("language") + ":",
             font_size="20sp",
             color=(0.8, 0.8, 0.8, 1),
             size_hint=(0.4, 1),
@@ -108,7 +104,7 @@ class MenuScreen(Screen, IView):
         self._btn_en = ToggleButton(
             text="EN",
             group="language",
-            state="down" if self._i18n.language == "en" else "normal",
+            state="down" if str(i18n.get('locale')) == "en" else "normal",
             font_size="18sp",
             size_hint=(0.3, 1),
             background_color=(0.2, 0.5, 0.8, 1),
@@ -116,7 +112,7 @@ class MenuScreen(Screen, IView):
         self._btn_it = ToggleButton(
             text="IT",
             group="language",
-            state="down" if self._i18n.language == "it" else "normal",
+            state="down" if str(i18n.get('locale')) == "it" else "normal",
             font_size="18sp",
             size_hint=(0.3, 1),
             background_color=(0.2, 0.5, 0.8, 1),
@@ -138,9 +134,9 @@ class MenuScreen(Screen, IView):
             self._on_new_game()
 
     def _set_language(self, lang: str) -> None:
-        self._i18n.set_language(lang)
+        i18n.set('locale', lang)
         self._refresh_labels()
 
     def _refresh_labels(self) -> None:
-        self._btn_new_game.text = self._i18n.t("new_game")
-        self._lang_label.text = self._i18n.t("language") + ":"
+        self._btn_new_game.text = i18n.t("new_game")
+        self._lang_label.text = i18n.t("language") + ":"
