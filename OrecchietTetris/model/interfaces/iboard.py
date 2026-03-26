@@ -60,8 +60,8 @@ class IBoard(ABC):
         """Lock *tetromino* into the grid at *(row, col)*."""
 
     @abstractmethod
-    def clear_lines(self) -> int:
-        """Remove all complete rows and return the number of rows cleared."""
+    def clear_lines(self) -> list[int]:
+        """Remove all complete rows and return their original row indices (descending)."""
 
     @abstractmethod
     def is_game_over(self, tetromino: ITetromino, spawn_col: int) -> bool:

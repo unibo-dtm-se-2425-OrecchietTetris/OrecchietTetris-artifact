@@ -89,13 +89,13 @@ class Board(IBoard):
                 if cell:
                     self._grid[row + r][col + c] = cell
 
-    def clear_lines(self) -> int:
-        """Remove all complete lines and return the number of lines cleared."""
+    def clear_lines(self) -> list[int]:
+        """Remove all complete rows and return their original indices (descending, bottom first)."""
         full_lines = [r for r in range(self._rows) if all(self._grid[r])]
         for r in full_lines:
             del self._grid[r]
             self._grid.insert(0, [0] * self._cols)
-        return len(full_lines)
+        return sorted(full_lines, reverse=True)
 
     def is_game_over(self, tetromino: ITetromino, spawn_col: int) -> bool:
         """Return True if the tetromino cannot be placed at the spawn row."""
