@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from kivy.app import App  # type: ignore[import]
-from kivy.uix.screenmanager import ScreenManager, NoTransition  # type: ignore[import]
+from kivy.app import App  # type: ignore[import-untyped]
+from kivy.uix.screenmanager import ScreenManager, NoTransition  # type: ignore[import-untyped]
 
 from OrecchietTetris.model import Tetris
 from OrecchietTetris.view.i18n import I18n
@@ -20,7 +20,7 @@ class TetrisApp(App):
       **MenuScreen** and stops the model loop.
     """
 
-    def build(self) -> ScreenManager:  # type: ignore[override]
+    def build(self) -> ScreenManager:
         self._i18n = I18n("en")
         self._model = Tetris()
 

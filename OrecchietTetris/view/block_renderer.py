@@ -56,9 +56,9 @@ class BlockRenderer:
         Falls back to a ``Button``-styled widget coloured via ``BLOCK_COLOURS``
         if the asset file does not exist.
         """
-        from kivy.uix.image import Image  # type: ignore[import]
-        from kivy.uix.widget import Widget  # type: ignore[import]
-        from kivy.graphics import Color, Rectangle  # type: ignore[import]
+        from kivy.uix.image import Image  # type: ignore[import-untyped]
+        from kivy.uix.widget import Widget  # type: ignore[import-untyped]
+        from kivy.graphics import Color, Rectangle  # type: ignore[import-untyped]
 
         source = BLOCK_IMAGES.get(cell_value)
         if source and os.path.exists(source):

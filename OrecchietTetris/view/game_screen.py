@@ -2,15 +2,15 @@ from __future__ import annotations
 
 from typing import Any, Callable, Optional
 
-from kivy.uix.screenmanager import Screen  # type: ignore[import]
-from kivy.uix.boxlayout import BoxLayout  # type: ignore[import]
-from kivy.uix.gridlayout import GridLayout  # type: ignore[import]
-from kivy.uix.label import Label  # type: ignore[import]
-from kivy.uix.button import Button  # type: ignore[import]
-from kivy.uix.widget import Widget  # type: ignore[import]
-from kivy.graphics import Color, Rectangle  # type: ignore[import]
-from kivy.clock import Clock  # type: ignore[import]
-from kivy.core.window import Window  # type: ignore[import]
+from kivy.uix.screenmanager import Screen  # type: ignore[import-untyped]
+from kivy.uix.boxlayout import BoxLayout  # type: ignore[import-untyped]
+from kivy.uix.gridlayout import GridLayout  # type: ignore[import-untyped]
+from kivy.uix.label import Label  # type: ignore[import-untyped]
+from kivy.uix.button import Button  # type: ignore[import-untyped]
+from kivy.uix.widget import Widget  # type: ignore[import-untyped]
+from kivy.graphics import Color, Rectangle  # type: ignore[import-untyped]
+from kivy.clock import Clock  # type: ignore[import-untyped]
+from kivy.core.window import Window  # type: ignore[import-untyped]
 
 from OrecchietTetris.utils import EventType
 from OrecchietTetris.model.interfaces import ITetris
@@ -213,7 +213,6 @@ class GameScreen(Screen, IView):
         grid = self._model.board.grid
         shadow_row = self._model.shadow_row
         piece = self._model.current_piece
-        cur_row = self._model.current_row
         cur_col = self._model.current_col
 
         # Build a shadow overlay

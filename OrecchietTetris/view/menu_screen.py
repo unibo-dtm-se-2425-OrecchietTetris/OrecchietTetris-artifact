@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import Any, Callable, Optional
 
-from kivy.uix.screenmanager import Screen  # type: ignore[import]
-from kivy.uix.boxlayout import BoxLayout  # type: ignore[import]
-from kivy.uix.button import Button  # type: ignore[import]
-from kivy.uix.label import Label  # type: ignore[import]
-from kivy.uix.togglebutton import ToggleButton  # type: ignore[import]
-from kivy.graphics import Color, Rectangle  # type: ignore[import]
+from kivy.uix.screenmanager import Screen  # type: ignore[import-untyped]
+from kivy.uix.boxlayout import BoxLayout  # type: ignore[import-untyped]
+from kivy.uix.button import Button  # type: ignore[import-untyped]
+from kivy.uix.label import Label  # type: ignore[import-untyped]
+from kivy.uix.togglebutton import ToggleButton  # type: ignore[import-untyped]
+from kivy.graphics import Color, Rectangle  # type: ignore[import-untyped]
 
 from OrecchietTetris.utils import EventType
 from OrecchietTetris.view.interfaces import IView
