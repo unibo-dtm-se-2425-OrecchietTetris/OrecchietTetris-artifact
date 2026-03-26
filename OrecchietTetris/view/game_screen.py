@@ -144,11 +144,13 @@ class GameScreen(Screen, IView):
         self,
         model: ITetris,
         on_back_to_menu: Optional[Callable[[], None]] = None,
+        on_try_again: Optional[Callable[[], None]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self._model = model
         self._on_back_to_menu = on_back_to_menu
+        self._on_try_again = on_try_again
         self._renderer = BlockRenderer()
         self._keyboard: Any = None
         self._overlay: Optional[Widget] = None
@@ -311,6 +313,17 @@ class GameScreen(Screen, IView):
             font_size="26sp",
             color=(1, 1, 1, 1),
         ))
+        btn_try = Button(
+            text=i18n.t("try_again"),
+            font_size="22sp",
+            size_hint=(0.6, None),
+            height=50,
+            pos_hint={"center_x": 0.5},
+            background_color=(0.2, 0.7, 0.2, 1),
+        )
+        btn_try.bind(on_release=self._handle_try_again)
+        overlay.add_widget(btn_try)
+
         btn = Button(
             text=i18n.t("back_to_menu"),
             font_size="22sp",
@@ -331,6 +344,12 @@ class GameScreen(Screen, IView):
         if self._on_back_to_menu is not None:
             self._on_back_to_menu()
 
+    def _handle_try_again(self, *_: Any) -> None:
+        if self._overlay is not None:
+            self.remove_widget(self._overlay)
+            self._overlay = None
+        if self._on_try_again is not None:
+            self._on_try_again()
     # ------------------------------------------------------------------
     # Pause button callback
     # ------------------------------------------------------------------
