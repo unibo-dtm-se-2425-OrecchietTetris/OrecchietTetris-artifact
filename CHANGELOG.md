@@ -1,3 +1,14 @@
+# [0.6.0](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.5.0...v0.6.0) (2026-03-26)
+
+
+### Features
+
+* **i18n:** add python-i18n locale YAML files (en, it) ([4387836](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/4387836aa9ae2843682019b66630654dfb426a4e))
+* **i18n:** configure python-i18n in TetrisApp, remove I18n instance ([941749c](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/941749cfc1862a24b51ea047393cc1762f1625e5))
+* **i18n:** migrate GameScreen to python-i18n direct API ([0718fe0](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/0718fe050e20e77340d310a31ba5da37096d7cf7))
+* **i18n:** migrate MenuScreen to python-i18n direct API ([87f9047](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/87f90474b3fd1ff2781051ffea858dd9e8f35b50))
+* **i18n:** remove custom I18n class and i18n tests ([4ae3334](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/4ae3334b36cd8801e287fb0f0115f9fc69eb6a0c))
+
 # [0.5.0](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.4.0...v0.5.0) (2026-03-26)
 
 
