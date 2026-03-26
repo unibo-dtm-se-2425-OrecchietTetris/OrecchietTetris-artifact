@@ -47,8 +47,8 @@ The project follows a Model-View (Observer pattern) architecture with abstract i
     - `iboard.py`: `IBoard` — `rows`, `cols`, `grid`, `is_valid_position()`, `place_tetromino()`, `clear_lines()`, `is_game_over()`, `reset()`
     - `itetris.py`: `ITetris(Subject, ABC)` — full game orchestrator contract; board/piece state, score/level, game-flow actions (`start`, `pause`, `resume`, `tick`), player actions (`move_left`, `move_right`, `move_down`, `rotate`, `hard_drop`, `hold`), automatic loop (`play`/`stop`).
   - `tetromino.py`: `ShapeType` enum (I, O, T, S, Z, J, L shapes as numbered 2D tuples, e.g. `I_SHAPE = ((1, 1, 1, 1),)`) and `Tetromino(ITetromino)` with `rotate()` (transpose/reverse).
-  - `board.py`: `Board(IBoard)` — **stub, not yet implemented**.
-  - `tetris.py`: `Tetris(ITetris)` — **stub, not yet implemented**.
+  - `board.py`: `Board(IBoard)` — manages the fixed grid and the falling piece. `clear_lines()` returns `list[int]` — the original row indices of cleared rows sorted descending (bottom-first), used by the view to animate clearing.
+  - `tetris.py`: `Tetris(ITetris)` — main game orchestrator. `_lock_piece()` calls `clear_lines()`, updates score/level with `len(cleared)`, and notifies `LINES_CLEARED` with the row-index list. `_spawn_piece()` also accepts an `ITetromino` argument (used by `hold()` to swap back a held piece). `play()` / `stop()` manage a daemon thread running `tick()` on `tick_interval`.
 
 - **`OrecchietTetris/utils/`** — shared utilities
   - `observer_subject.py`: `Subject`, `Observer` base classes, and `EventType` enum. `Subject.notify(event_type, data)` calls `observer.update(event_type, data)` on all attached observers. `EventType` values: `BOARD_UPDATED`, `NEW_PIECE`, `LINES_CLEARED`, `SCORE_UPDATED`, `GAME_OVER`, `PAUSED`, `RESUMED`, `HOLD_UPDATED`.
@@ -65,8 +65,13 @@ The project follows a Model-View (Observer pattern) architecture with abstract i
   - `TetrisGui(Observer)`: placeholder, superseded by `view/`.
 
 ### Implementation status
-- **Fully implemented:** `Tetromino` (shapes + rotation), all interface definitions (`ITetromino`, `IBoard`, `ITetris`, `IView`), observer infrastructure (`Subject`, `Observer`, `EventType`), complete Kivy view layer (`MenuScreen`, `GameScreen`, `TetrisApp`), `I18n`, `BlockRenderer`, `main()` entry point, CI/CD pipeline, linting/type-checking config.
-- **Stubs (not yet implemented):** `Board`, `Tetris` (model layer — game logic pending).
+- **Fully implemented:** all layers — `Tetromino`, `Board`, `Tetris`, all interfaces, observer infrastructure, complete Kivy view layer (`MenuScreen`, `GameScreen`, `TetrisApp`), `I18n`, `BlockRenderer`, `main()` entry point, CI/CD pipeline.
+
+### View ↔ Model event contracts
+Key non-obvious data payloads in `Subject.notify(event_type, data)`:
+- `LINES_CLEARED` → `data: list[int]` — cleared row indices, sorted descending (bottom row first). `GameScreen` uses this to animate rows white one-by-one and suppresses `BOARD_UPDATED` redraws during animation via `_clearing_animation: bool`.
+- `NEW_PIECE` → `data: ITetromino` — the piece now current (after spawn).
+- `HOLD_UPDATED` → `data: ITetromino` — the piece now in the hold slot.
 
 ### Keyboard controls (GameScreen)
 
