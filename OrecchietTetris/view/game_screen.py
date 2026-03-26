@@ -15,7 +15,7 @@ from kivy.core.window import Window  # type: ignore[import-untyped]
 from OrecchietTetris.utils import EventType
 from OrecchietTetris.model.interfaces import ITetris
 from OrecchietTetris.view.interfaces import IView
-from OrecchietTetris.view.i18n import I18n
+import i18n  # type: ignore[import-untyped]
 from OrecchietTetris.view.block_renderer import BlockRenderer, BLOCK_COLOURS
 
 
@@ -136,8 +136,6 @@ class GameScreen(Screen, IView):
     model:
         The ``ITetris`` implementation.  The screen attaches itself as an
         observer after being shown.
-    i18n:
-        Shared localization instance.
     on_back_to_menu:
         Callback invoked when the player chooses to return to the menu.
     """
@@ -145,13 +143,11 @@ class GameScreen(Screen, IView):
     def __init__(
         self,
         model: ITetris,
-        i18n: I18n,
         on_back_to_menu: Optional[Callable[[], None]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self._model = model
-        self._i18n = i18n
         self._on_back_to_menu = on_back_to_menu
         self._renderer = BlockRenderer()
         self._keyboard: Any = None
@@ -191,16 +187,16 @@ class GameScreen(Screen, IView):
             self._update_next_preview()
             self._redraw_board()
         elif event_type == EventType.LINES_CLEARED:
-            self._lbl_lines.text = f"{self._i18n.t('lines')}: {self._model.lines_cleared}"
+            self._lbl_lines.text = f"{i18n.t('lines')}: {self._model.lines_cleared}"
         elif event_type == EventType.SCORE_UPDATED:
-            self._lbl_score.text = f"{self._i18n.t('score')}: {self._model.score}"
-            self._lbl_level.text = f"{self._i18n.t('level')}: {self._model.level}"
+            self._lbl_score.text = f"{i18n.t('score')}: {self._model.score}"
+            self._lbl_level.text = f"{i18n.t('level')}: {self._model.level}"
         elif event_type == EventType.GAME_OVER:
             self._show_game_over_overlay()
         elif event_type == EventType.PAUSED:
-            self._btn_pause.text = self._i18n.t("resume")
+            self._btn_pause.text = i18n.t("resume")
         elif event_type == EventType.RESUMED:
-            self._btn_pause.text = self._i18n.t("pause")
+            self._btn_pause.text = i18n.t("pause")
         elif event_type == EventType.HOLD_UPDATED:
             self._update_hold_preview()
 
@@ -304,18 +300,18 @@ class GameScreen(Screen, IView):
             Rectangle(pos=overlay.pos, size=overlay.size)
 
         overlay.add_widget(Label(
-            text=self._i18n.t("game_over"),
+            text=i18n.t("game_over"),
             font_size="40sp",
             bold=True,
             color=(0.9, 0.2, 0.2, 1),
         ))
         overlay.add_widget(Label(
-            text=f"{self._i18n.t('score')}: {self._model.score}",
+            text=f"{i18n.t('score')}: {self._model.score}",
             font_size="26sp",
             color=(1, 1, 1, 1),
         ))
         btn = Button(
-            text=self._i18n.t("back_to_menu"),
+            text=i18n.t("back_to_menu"),
             font_size="22sp",
             size_hint=(0.6, None),
             height=50,
@@ -393,21 +389,21 @@ class GameScreen(Screen, IView):
 
         # Score / level / lines
         self._lbl_score = Label(
-            text=f"{self._i18n.t('score')}: 0",
+            text=f"{i18n.t('score')}: 0",
             font_size="16sp",
             color=(1, 1, 1, 1),
             size_hint=(1, None),
             height=30,
         )
         self._lbl_level = Label(
-            text=f"{self._i18n.t('level')}: 1",
+            text=f"{i18n.t('level')}: 1",
             font_size="16sp",
             color=(1, 1, 1, 1),
             size_hint=(1, None),
             height=30,
         )
         self._lbl_lines = Label(
-            text=f"{self._i18n.t('lines')}: 0",
+            text=f"{i18n.t('lines')}: 0",
             font_size="16sp",
             color=(1, 1, 1, 1),
             size_hint=(1, None),
@@ -419,7 +415,7 @@ class GameScreen(Screen, IView):
 
         # Next piece
         panel.add_widget(Label(
-            text=self._i18n.t("next"),
+            text=i18n.t("next"),
             font_size="14sp",
             color=(0.8, 0.8, 0.8, 1),
             size_hint=(1, None),
@@ -435,7 +431,7 @@ class GameScreen(Screen, IView):
 
         # Hold piece
         panel.add_widget(Label(
-            text=self._i18n.t("hold"),
+            text=i18n.t("hold"),
             font_size="14sp",
             color=(0.8, 0.8, 0.8, 1),
             size_hint=(1, None),
@@ -451,7 +447,7 @@ class GameScreen(Screen, IView):
 
         # Pause button
         self._btn_pause = Button(
-            text=self._i18n.t("pause"),
+            text=i18n.t("pause"),
             font_size="16sp",
             size_hint=(1, None),
             height=40,
