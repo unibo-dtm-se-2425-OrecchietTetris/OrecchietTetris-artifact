@@ -154,6 +154,7 @@ class GameScreen(Screen, IView):
         self._overlay: Optional[Widget] = None
 
         self._board_cells: list[list[_Cell]] = []
+        self._clearing_animation: bool = False
         self._build_ui()
 
     # ------------------------------------------------------------------
@@ -182,12 +183,17 @@ class GameScreen(Screen, IView):
 
     def _dispatch(self, event_type: EventType, data: Any) -> None:
         if event_type == EventType.BOARD_UPDATED:
-            self._redraw_board()
+            if not self._clearing_animation:
+                self._redraw_board()
         elif event_type == EventType.NEW_PIECE:
             self._update_next_preview()
-            self._redraw_board()
+            if not self._clearing_animation:
+                self._redraw_board()
         elif event_type == EventType.LINES_CLEARED:
             self._lbl_lines.text = f"{i18n.t('lines')}: {self._model.lines_cleared}"
+            rows: list[int] = list(data)
+            self._clearing_animation = True
+            self._animate_line_clear(rows, 0)
         elif event_type == EventType.SCORE_UPDATED:
             self._lbl_score.text = f"{i18n.t('score')}: {self._model.score}"
             self._lbl_level.text = f"{i18n.t('level')}: {self._model.level}"
@@ -229,6 +235,16 @@ class GameScreen(Screen, IView):
                 else:
                     colour = BLOCK_COLOURS[0]
                 self._board_cells[r][c].set_colour(colour)
+
+    def _animate_line_clear(self, rows: list[int], idx: int) -> None:
+        """Flash cleared rows white one by one (bottom to top), then redraw."""
+        if idx < len(rows):
+            for c in range(BOARD_COLS):
+                self._board_cells[rows[idx]][c].set_colour((1.0, 1.0, 1.0, 1.0))
+            Clock.schedule_once(lambda dt, i=idx: self._animate_line_clear(rows, i + 1), 0.2)
+        else:
+            self._clearing_animation = False
+            self._redraw_board()
 
     def _update_next_preview(self) -> None:
         nxt = self._model.next_piece

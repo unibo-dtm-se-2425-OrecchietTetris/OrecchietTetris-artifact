@@ -398,6 +398,65 @@ def test_lines_cleared_fires_event(o_game: Tetris, observer: MockObserver) -> No
     assert EventType.SCORE_UPDATED in observer.event_types()
 
 
+def test_two_lines_cleared_simultaneously(o_game: Tetris, observer: MockObserver) -> None:
+    o_game.attach(observer)
+    for r in [18, 19]:
+        for c in range(8):
+            o_game._board._grid[r][c] = 1
+    o_game._board._current_row = 18
+    o_game._board._current_col = 8
+    o_game._lock_piece()
+    assert len(observer.data_for(EventType.LINES_CLEARED)) == 2
+
+
+def test_score_increases_after_line_clear(o_game: Tetris) -> None:
+    for r in [18, 19]:
+        for c in range(8):
+            o_game._board._grid[r][c] = 1
+    o_game._board._current_row = 18
+    o_game._board._current_col = 8
+    o_game._lock_piece()
+    assert o_game.score > 0
+
+
+def test_score_scales_with_level(o_game: Tetris) -> None:
+    # Set lines_cleared to 20 so the engine computes level = 3 after clearing 2 more
+    o_game._lines_cleared = 20
+    for r in [18, 19]:
+        for c in range(8):
+            o_game._board._grid[r][c] = 1
+    o_game._board._current_row = 18
+    o_game._board._current_col = 8
+    o_game._lock_piece()
+    # 2 lines at level 3: 300 * 3 = 900
+    assert o_game.score == 900
+
+
+def test_level_increases_every_ten_lines(o_game: Tetris) -> None:
+    o_game._lines_cleared = 9
+    for r in [18, 19]:
+        for c in range(8):
+            o_game._board._grid[r][c] = 1
+    o_game._board._current_row = 18
+    o_game._board._current_col = 8
+    o_game._lock_piece()
+    # 9 + 2 = 11 lines → level = 11 // 10 + 1 = 2
+    assert o_game.level == 2
+
+
+def test_cleared_rows_are_removed_from_board(o_game: Tetris) -> None:
+    for r in [18, 19]:
+        for c in range(8):
+            o_game._board._grid[r][c] = 1
+    o_game._board._current_row = 18
+    o_game._board._current_col = 8
+    o_game._lock_piece()
+    grid = o_game.board.grid
+    # Rows 18 and 19 were cleared; they must now be empty
+    assert all(grid[18][c] == 0 for c in range(o_game.board.cols))
+    assert all(grid[19][c] == 0 for c in range(o_game.board.cols))
+
+
 # ---------------------------------------------------------------------------
 # Integration: game over
 # ---------------------------------------------------------------------------

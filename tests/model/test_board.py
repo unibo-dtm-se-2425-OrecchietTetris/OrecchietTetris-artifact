@@ -153,20 +153,20 @@ def test_place_tetromino_offset_position(board: Board, o_piece: Tetromino) -> No
 def test_clear_lines_no_full_rows(small_board: Board, o_piece: Tetromino) -> None:
     # O at (0,0) on 4-col board fills only cols 0-1 → rows not complete
     small_board.place_tetromino(o_piece, 0, 0)
-    assert small_board.clear_lines() == 0
+    assert small_board.clear_lines() == []
 
 
 def test_clear_lines_one_full_row_returns_count(small_board: Board) -> None:
     # I_SHAPE is 1×4 — exactly fills one row of the 4-col board
     small_board.place_tetromino(Tetromino(ShapeType.I_SHAPE), 0, 0)
-    assert small_board.clear_lines() == 1
+    assert len(small_board.clear_lines()) == 1
 
 
 def test_clear_lines_two_full_rows_returns_count(small_board: Board) -> None:
     # Two side-by-side O pieces fill rows 0 and 1 completely on a 4-col board
     small_board.place_tetromino(Tetromino(ShapeType.O_SHAPE), 0, 0)
     small_board.place_tetromino(Tetromino(ShapeType.O_SHAPE), 0, 2)
-    assert small_board.clear_lines() == 2
+    assert len(small_board.clear_lines()) == 2
 
 
 def test_clear_lines_clears_only_full_rows(small_board: Board) -> None:
@@ -174,7 +174,7 @@ def test_clear_lines_clears_only_full_rows(small_board: Board) -> None:
     small_board.place_tetromino(Tetromino(ShapeType.O_SHAPE), 2, 0)
     small_board.place_tetromino(Tetromino(ShapeType.O_SHAPE), 2, 2)
     small_board.place_tetromino(Tetromino(ShapeType.O_SHAPE), 0, 0)  # partial (cols 2-3 empty)
-    assert small_board.clear_lines() == 2
+    assert len(small_board.clear_lines()) == 2
 
 
 def test_clear_lines_drops_remaining_rows(small_board: Board) -> None:
@@ -201,7 +201,7 @@ def test_clear_lines_grid_is_empty_afterwards(small_board: Board) -> None:
     small_board.place_tetromino(Tetromino(ShapeType.O_SHAPE), 2, 0)
     small_board.place_tetromino(Tetromino(ShapeType.O_SHAPE), 2, 2)
     cleared = small_board.clear_lines()
-    assert cleared == 4
+    assert len(cleared) == 4
     assert all(cell == 0 for row in small_board.grid for cell in row)
 
 

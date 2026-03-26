@@ -275,9 +275,9 @@ class Tetris(ITetris):
 
         cleared = self._board.clear_lines()
         if cleared:
-            self._lines_cleared += cleared
+            self._lines_cleared += len(cleared)
             self._level = self._lines_cleared // 10 + 1
-            self._score += _LINE_POINTS.get(cleared, 0) * self._level
+            self._score += _LINE_POINTS.get(len(cleared), 0) * self._level
             self.notify(EventType.LINES_CLEARED, cleared)
             self.notify(EventType.SCORE_UPDATED, self._score)
 
