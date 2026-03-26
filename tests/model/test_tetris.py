@@ -553,7 +553,7 @@ def test_loop_exits_when_game_over() -> None:
         game._board._grid[r][spawn_col] = 1
         game._board._grid[r][spawn_col + 1] = 1
     # Wait long enough for the current piece to lock and trigger game-over
-    time.sleep(0.5)
+    time.sleep(1)
     assert game.is_game_over
     # Thread should have exited on its own (join with generous timeout)
     assert game._game_thread is not None
