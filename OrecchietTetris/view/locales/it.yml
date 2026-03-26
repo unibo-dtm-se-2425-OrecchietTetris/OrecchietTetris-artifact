@@ -1,0 +1,12 @@
+it:
+  new_game: "Nuova Partita"
+  language: "Lingua"
+  pause: "Pausa"
+  resume: "Riprendi"
+  game_over: "Partita Finita"
+  score: "Punteggio"
+  level: "Livello"
+  lines: "Righe"
+  hold: "Tieni"
+  next: "Prossimo"
+  back_to_menu: "Menu Principale"
