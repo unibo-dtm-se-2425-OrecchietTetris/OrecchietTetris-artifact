@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from pathlib import Path
+
+import i18n  # type: ignore[import-untyped]
 from kivy.app import App  # type: ignore[import-untyped]
 from kivy.uix.screenmanager import ScreenManager, NoTransition  # type: ignore[import-untyped]
 
 from OrecchietTetris.model import Tetris
-from OrecchietTetris.view.i18n import I18n
 from OrecchietTetris.view.menu_screen import MenuScreen
 from OrecchietTetris.view.game_screen import GameScreen
 
@@ -21,19 +23,22 @@ class TetrisApp(App):
     """
 
     def build(self) -> ScreenManager:
-        self._i18n = I18n("en")
+        i18n.set('file_format', 'yml')
+        i18n.set('filename_format', '{locale}.{format}')
+        i18n.set('load_path', [str(Path(__file__).parent / 'locales')])
+        i18n.set('locale', 'en')
+        i18n.set('fallback', 'en')
+
         self._model = Tetris()
 
         self._sm = ScreenManager(transition=NoTransition())
 
         self._menu = MenuScreen(
-            i18n=self._i18n,
             on_new_game=self._start_game,
             name="menu",
         )
         self._game = GameScreen(
             model=self._model,
-            i18n=self._i18n,
             on_back_to_menu=self._back_to_menu,
             name="game",
         )
