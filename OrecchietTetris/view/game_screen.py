@@ -152,6 +152,7 @@ class GameScreen(Screen, IView):
         self._renderer = BlockRenderer()
         self._keyboard: Any = None
         self._overlay: Optional[Widget] = None
+        self._quit_overlay: Optional[Widget] = None
 
         self._board_cells: list[list[_Cell]] = []
         self._build_ui()
@@ -340,6 +341,64 @@ class GameScreen(Screen, IView):
         else:
             self._model.pause()
 
+    def _handle_quit(self, *_: Any) -> None:
+        if self._model.is_running and not self._model.is_paused:
+            self._model.pause()
+        self._show_quit_confirm_overlay()
+
+    def _show_quit_confirm_overlay(self) -> None:
+        if self._quit_overlay is not None:
+            return
+        overlay = BoxLayout(
+            orientation="vertical",
+            padding=30,
+            spacing=15,
+            size=self.size,
+            pos=self.pos,
+            size_hint=(None, None),
+        )
+        with overlay.canvas.before:
+            Color(0, 0, 0, 0.75)
+            Rectangle(pos=overlay.pos, size=overlay.size)
+
+        overlay.add_widget(Label(
+            text=i18n.t("quit_confirm"),
+            font_size="32sp",
+            bold=True,
+            color=(1, 1, 1, 1),
+        ))
+
+        btn_row = BoxLayout(orientation="horizontal", size_hint=(0.6, None),
+                            height=50, pos_hint={"center_x": 0.5}, spacing=10)
+        btn_yes = Button(text=i18n.t("yes"), font_size="22sp",
+                         background_color=(0.7, 0.15, 0.15, 1))
+        btn_no = Button(text=i18n.t("no"), font_size="22sp",
+                        background_color=(0.3, 0.3, 0.7, 1))
+        btn_yes.bind(on_release=self._confirm_quit)
+        btn_no.bind(on_release=self._dismiss_quit_overlay)
+        btn_row.add_widget(btn_yes)
+        btn_row.add_widget(btn_no)
+        overlay.add_widget(btn_row)
+
+        self.add_widget(overlay)
+        self._quit_overlay = overlay
+
+    def _dismiss_quit_overlay(self, *_: Any) -> None:
+        if self._quit_overlay is not None:
+            self.remove_widget(self._quit_overlay)
+            self._quit_overlay = None
+        if self._model.is_paused:
+            self._model.resume()
+
+    def _confirm_quit(self, *_: Any) -> None:
+        if self._quit_overlay is not None:
+            self.remove_widget(self._quit_overlay)
+            self._quit_overlay = None
+        if self._model.is_running:
+            self._model.stop()
+        if self._on_back_to_menu is not None:
+            self._on_back_to_menu()
+
     # ------------------------------------------------------------------
     # UI construction
     # ------------------------------------------------------------------
@@ -455,6 +514,17 @@ class GameScreen(Screen, IView):
         )
         self._btn_pause.bind(on_release=self._handle_pause)
         panel.add_widget(self._btn_pause)
+
+        # Quit button
+        self._btn_quit = Button(
+            text=i18n.t("quit"),
+            font_size="16sp",
+            size_hint=(1, None),
+            height=40,
+            background_color=(0.7, 0.15, 0.15, 1),
+        )
+        self._btn_quit.bind(on_release=self._handle_quit)
+        panel.add_widget(self._btn_quit)
 
         panel.add_widget(Widget())  # spacer
         root.add_widget(panel)
