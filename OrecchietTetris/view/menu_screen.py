@@ -124,7 +124,7 @@ class MenuScreen(Screen, IView):
         lang_row.add_widget(self._btn_it)
         root.add_widget(lang_row)
 
-        #Quit button
+        # Quit button
         self._btn_quit = Button(
             text=i18n.t("quit"),
             font_size="20sp",
@@ -137,9 +137,9 @@ class MenuScreen(Screen, IView):
         root.add_widget(self._btn_quit)
 
         self.add_widget(root)
-    
-    def _handle_quit(self, *_args:Any) -> None:
-        App.get_running_app().stop() 
+
+    def _handle_quit(self, *_args: Any) -> None:
+        App.get_running_app().stop()
 
     def _update_bg(self, *_args: Any) -> None:
         self._bg_rect.pos = self.pos
