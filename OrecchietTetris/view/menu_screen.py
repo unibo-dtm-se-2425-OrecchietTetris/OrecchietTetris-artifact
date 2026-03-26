@@ -9,6 +9,7 @@ from kivy.uix.button import Button  # type: ignore[import-untyped]
 from kivy.uix.label import Label  # type: ignore[import-untyped]
 from kivy.uix.togglebutton import ToggleButton  # type: ignore[import-untyped]
 from kivy.graphics import Color, Rectangle  # type: ignore[import-untyped]
+from kivy.app import App  # type: ignore[import-untyped]
 
 from OrecchietTetris.utils import EventType
 from OrecchietTetris.view.interfaces import IView
@@ -123,7 +124,22 @@ class MenuScreen(Screen, IView):
         lang_row.add_widget(self._btn_it)
         root.add_widget(lang_row)
 
+        #Quit button
+        self._btn_quit = Button(
+            text=i18n.t("quit"),
+            font_size="20sp",
+            size_hint=(0.5, 0.12),
+            pos_hint={"center_x": 0.5},
+            background_color=(0.7, 0.15, 0.15, 1),
+            color=(1, 1, 1, 1),
+        )
+        self._btn_quit.bind(on_release=self._handle_quit)
+        root.add_widget(self._btn_quit)
+
         self.add_widget(root)
+    
+    def _handle_quit(self, *_args:Any) -> None:
+        App.get_running_app().stop() 
 
     def _update_bg(self, *_args: Any) -> None:
         self._bg_rect.pos = self.pos
@@ -140,3 +156,4 @@ class MenuScreen(Screen, IView):
     def _refresh_labels(self) -> None:
         self._btn_new_game.text = i18n.t("new_game")
         self._lang_label.text = i18n.t("language") + ":"
+        self._btn_quit.text = i18n.t("quit")
