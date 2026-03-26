@@ -1,3 +1,17 @@
+# [0.7.0](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.6.0...v0.7.0) (2026-03-26)
+
+
+### Features
+
+* **factory:** add BagTetrominoFactory with 7-bag algorithm ([bf5c878](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/bf5c87873379b8b7446bbbd63970a80e30fdfffa))
+* **factory:** add ITetrominoFactory interface ([1005718](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/1005718732271ba9e098cc5e72796b7d3035aaad))
+* **factory:** wire ITetrominoFactory into Tetris, replace monkeypatching in tests ([972b9db](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/972b9db718f207fc28693a91d29179f76912e475))
+
+
+### Performance Improvements
+
+* **test:** increase sleep ([00d67b0](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/00d67b011b0b898cee3c2b9954669b4527176199))
+
 # [0.6.0](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.5.0...v0.6.0) (2026-03-26)
 
 
