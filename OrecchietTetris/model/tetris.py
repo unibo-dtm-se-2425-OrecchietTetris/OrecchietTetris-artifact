@@ -1,9 +1,10 @@
 import threading
 from typing import Optional
 
-from OrecchietTetris.model.interfaces import ITetris, IBoard, ITetromino
+from OrecchietTetris.model.interfaces import ITetris, IBoard, ITetromino, ITetrominoFactory
 from OrecchietTetris.model.board import Board
 from OrecchietTetris.model.tetromino import Tetromino, ShapeType
+from OrecchietTetris.model.bag_tetromino_factory import BagTetrominoFactory
 from OrecchietTetris.utils import EventType
 
 
@@ -19,11 +20,12 @@ _LINE_POINTS = {1: 100, 2: 300, 3: 500, 4: 800}
 class Tetris(ITetris):
     """Main game model. Exposes all player actions and notifies observers on state changes."""
 
-    def __init__(self) -> None:
+    def __init__(self, factory: Optional[ITetrominoFactory] = None) -> None:
         super().__init__()
+        self._factory: ITetrominoFactory = factory if factory is not None else BagTetrominoFactory()
         self._board: Board = Board()
-        self._next_piece: Tetromino = Tetromino()
-        self._held_piece: Optional[Tetromino] = None
+        self._next_piece: ITetromino = self._factory.create_tetromino()
+        self._held_piece: Optional[ITetromino] = None
         self._can_hold: bool = True
         self._score: int = 0
         self._level: int = 1
@@ -116,6 +118,7 @@ class Tetris(ITetris):
         self._game_over = False
         self._paused = False
         self._running = True
+        self._factory.reset()
         self._spawn_piece()
 
     def pause(self) -> None:
@@ -284,7 +287,7 @@ class Tetris(ITetris):
         """Promote piece to current, generate a new next piece, check game-over."""
         if new_piece is None:
             new_piece = self._next_piece
-            self._next_piece = Tetromino()
+            self._next_piece = self._factory.create_tetromino()
         spawn_col = self._board.cols // 2 - 1
         self._board.set_falling_piece(new_piece, 0, spawn_col)
 
