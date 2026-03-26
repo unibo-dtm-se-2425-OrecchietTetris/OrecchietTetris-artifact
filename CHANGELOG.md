@@ -1,3 +1,10 @@
+## [0.7.1](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.7.0...v0.7.1) (2026-03-26)
+
+
+### Bug Fixes
+
+* when lines cleared, show them being cleared with a timeout among them ([c10e586](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/c10e586014e841b005fc78c486279577a8a2d4e0))
+
 # [0.7.0](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.6.0...v0.7.0) (2026-03-26)
 
 
