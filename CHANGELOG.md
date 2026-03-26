@@ -1,3 +1,20 @@
+# [0.5.0](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.4.0...v0.5.0) (2026-03-26)
+
+
+### Bug Fixes
+
+* errors from static analysis ([a90a5c9](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/a90a5c9b207b84d8377f5993241799b58a530bb9))
+
+
+### Features
+
+* **view:** add BlockRenderer with image-to-integer mapping ([ed647ab](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/ed647abf6daaa65d9659f900856389e7872c6792))
+* **view:** add IView interface and i18n module ([23993c0](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/23993c04acb0fdb8376c19d3c47021eea6ce0a5e))
+* **view:** add TetrisApp entry point and screen navigation ([7ed2fc6](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/7ed2fc6399eb2ef57778486432e34455f875dfa7))
+* **view:** implement GameScreen layout, board rendering, Observer events and keyboard input ([a841775](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/a84177583c451baac71bd05376fa7e7a2763a1af))
+* **view:** implement MenuScreen with language selector ([310e65b](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/310e65b8a986fd2501ec1976a9735ed861ea7acf))
+* wire main() entry point to TetrisApp ([295742d](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/295742d4aaf7239f4e35ec0b20cdf489d3663761))
+
 # [0.4.0](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.3.2...v0.4.0) (2026-03-11)
 
 
