@@ -10,3 +10,4 @@ it:
   hold: "Tieni"
   next: "Prossimo"
   back_to_menu: "Menu Principale"
+  quit: "Esci"
