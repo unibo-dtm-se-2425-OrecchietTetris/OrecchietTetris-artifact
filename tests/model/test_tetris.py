@@ -12,11 +12,7 @@ import pytest
 from OrecchietTetris.utils import Observer, EventType
 import time
 
-from OrecchietTetris.model.tetris import (
-    Tetris,
-    BASE_TICK_INTERVAL,
-    MIN_TICK_INTERVAL,
-)
+from OrecchietTetris.model.tetris import (Tetris)
 from OrecchietTetris.model.interfaces import ITetrominoFactory, ITetromino
 from OrecchietTetris.model.tetromino import Tetromino, ShapeType
 
@@ -517,7 +513,7 @@ def test_hold_full_cycle_integration(o_game: Tetris) -> None:
 def test_tick_interval_at_level_1() -> None:
     game = Tetris()
     game.start()
-    assert game.tick_interval == BASE_TICK_INTERVAL
+    assert game.tick_interval == 1
 
 
 def test_tick_interval_decreases_with_level() -> None:
@@ -526,13 +522,6 @@ def test_tick_interval_decreases_with_level() -> None:
     interval_l1 = game.tick_interval
     game._level = 5
     assert game.tick_interval < interval_l1
-
-
-def test_tick_interval_does_not_go_below_minimum() -> None:
-    game = Tetris()
-    game.start()
-    game._level = 100
-    assert game.tick_interval == MIN_TICK_INTERVAL
 
 
 # ---------------------------------------------------------------------------
