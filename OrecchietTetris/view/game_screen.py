@@ -149,7 +149,6 @@ class GameScreen(Screen, IView):
         super().__init__(**kwargs)
         self._model = model
         self._on_back_to_menu = on_back_to_menu
-        self._on_try_again = self._model.play
         self._renderer = BlockRenderer()
         self._keyboard: Any = None
         self._overlay: Optional[Widget] = None
@@ -157,6 +156,8 @@ class GameScreen(Screen, IView):
 
         self._board_cells: list[list[_Cell]] = []
         self._clearing_animation: bool = False
+        self._countdown_overlay: Optional[Widget] = None
+        self._on_try_again = self.start_with_countdown
         self._build_ui()
 
     # ------------------------------------------------------------------
@@ -175,6 +176,46 @@ class GameScreen(Screen, IView):
         self.disabled = True
         self._model.detach(self)
         self._unbind_keyboard()
+
+    def start_with_countdown(self) -> None:
+        """Show a 3-2-1 countdown overlay then start a new game."""
+        self._show_countdown(self._model.play)
+
+    # ------------------------------------------------------------------
+    # Countdown overlay
+    # ------------------------------------------------------------------
+
+    def _show_countdown(self, callback: Callable[[], None]) -> None:
+        """Display 3 → 2 → 1 over the board, then invoke *callback*."""
+        if self._countdown_overlay is not None:
+            return
+        overlay = Label(
+            text="3",
+            font_size="120sp",
+            bold=True,
+            color=(1, 1, 1, 1),
+            size=self.size,
+            pos=self.pos,
+            size_hint=(None, None),
+        )
+        with overlay.canvas.before:
+            Color(0, 0, 0, 0.65)
+            self._countdown_bg = Rectangle(pos=overlay.pos, size=overlay.size)
+        self.add_widget(overlay)
+        self._countdown_overlay = overlay
+        Clock.schedule_once(lambda *_: self._countdown_step(2, overlay, callback), 1.0)
+
+    def _countdown_step(self, count: int, overlay: Any, callback: Callable[[], None]) -> None:
+        if count > 0:
+            overlay.text = str(count)
+            Clock.schedule_once(
+                lambda *_: self._countdown_step(count - 1, overlay, callback), 1.0
+            )
+        else:
+            if self._countdown_overlay is not None:
+                self.remove_widget(self._countdown_overlay)
+                self._countdown_overlay = None
+            callback()
 
     # ------------------------------------------------------------------
     # Observer
@@ -329,6 +370,8 @@ class GameScreen(Screen, IView):
     def _on_key_down(self, _keyboard: Any, keycode: tuple[int, str], _text: str,
                      _modifiers: Any) -> bool:
         _, key = keycode
+        if self._countdown_overlay is not None:
+            return True
         if self._model.is_game_over:
             return False
         if key == "left":
@@ -344,10 +387,7 @@ class GameScreen(Screen, IView):
         elif key == "c":
             self._model.hold()
         elif key in ("p", "escape"):
-            if self._model.is_paused:
-                self._model.resume()
-            else:
-                self._model.pause()
+            self._handle_pause()
         elif key in ("q"):
             if self._quit_overlay is None:
                 self._handle_quit()
@@ -428,7 +468,7 @@ class GameScreen(Screen, IView):
 
     def _handle_pause(self, *_: Any) -> None:
         if self._model.is_paused:
-            self._model.resume()
+            self._show_countdown(self._model.resume)
         else:
             self._model.pause()
 
