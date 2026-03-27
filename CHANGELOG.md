@@ -1,3 +1,17 @@
+## [0.7.3](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.7.2...v0.7.3) (2026-03-27)
+
+
+### Bug Fixes
+
+* **Game Screen:** add quit keyboard shortcut ([8005dbf](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/8005dbf7ec34a1395cad717f872b57f8c4660e27))
+* **game screen:** animation on lines cleared ([4d4dd10](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/4d4dd10ad538e15da0c1ede2795c4b3ee47dc2bd))
+* **Game Screen:** refresh labels when shown ([be214a8](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/be214a8fa9dc2f4f93ff6578b9afda4d438b7289))
+
+
+### Performance Improvements
+
+* move try again handler from app.py to game_screen.py ([0f6dab1](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/0f6dab14bfbb369d629f87d78ed904fe7c11fe39))
+
 ## [0.7.2](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.7.1...v0.7.2) (2026-03-26)
 
 
