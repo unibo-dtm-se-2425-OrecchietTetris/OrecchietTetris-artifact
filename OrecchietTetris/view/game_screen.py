@@ -348,6 +348,11 @@ class GameScreen(Screen, IView):
                 self._model.resume()
             else:
                 self._model.pause()
+        elif key in ("q"):
+            if self._quit_overlay is None:
+                self._handle_quit()
+            else:
+                self._dismiss_quit_overlay()
         return True
 
     # ------------------------------------------------------------------
