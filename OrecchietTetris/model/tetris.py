@@ -273,12 +273,13 @@ class Tetris(ITetris):
         self._can_hold = True
         self.notify(EventType.BOARD_UPDATED)
 
+        pre_clear_grid = [row[:] for row in self._board._grid]
         cleared = self._board.clear_lines()
         if cleared:
             self._lines_cleared += len(cleared)
             self._level = self._lines_cleared // 10 + 1
             self._score += _LINE_POINTS.get(len(cleared), 0) * self._level
-            self.notify(EventType.LINES_CLEARED, cleared)
+            self.notify(EventType.LINES_CLEARED, (cleared, pre_clear_grid))
             self.notify(EventType.SCORE_UPDATED, self._score)
 
         self._spawn_piece()
