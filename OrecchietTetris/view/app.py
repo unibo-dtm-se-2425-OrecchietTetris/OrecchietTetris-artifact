@@ -40,7 +40,6 @@ class TetrisApp(App):
         self._game = GameScreen(
             model=self._model,
             on_back_to_menu=self._back_to_menu,
-            on_try_again=self._restart_game,
             name="game",
         )
 
@@ -66,7 +65,3 @@ class TetrisApp(App):
         self._game.hide()
         self._menu.show()
         self._sm.current = "menu"
-
-    def _restart_game(self) -> None:
-        """Start a new game without leaving the game screen."""
-        self._model.play()

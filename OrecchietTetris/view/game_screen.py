@@ -144,13 +144,12 @@ class GameScreen(Screen, IView):
         self,
         model: ITetris,
         on_back_to_menu: Optional[Callable[[], None]] = None,
-        on_try_again: Optional[Callable[[], None]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self._model = model
         self._on_back_to_menu = on_back_to_menu
-        self._on_try_again = on_try_again
+        self._on_try_again = self._model.play
         self._renderer = BlockRenderer()
         self._keyboard: Any = None
         self._overlay: Optional[Widget] = None
@@ -167,6 +166,7 @@ class GameScreen(Screen, IView):
     def show(self) -> None:
         self.opacity = 1.0
         self.disabled = False
+        self._refresh_labels()
         self._model.attach(self)
         self._bind_keyboard()
 
@@ -559,13 +559,14 @@ class GameScreen(Screen, IView):
             panel.add_widget(lbl)
 
         # Next piece
-        panel.add_widget(Label(
+        self._lbl_next = Label(
             text=i18n.t("next"),
             font_size="14sp",
             color=(0.8, 0.8, 0.8, 1),
             size_hint=(1, None),
             height=22,
-        ))
+        )
+        panel.add_widget(self._lbl_next)
         self._next_preview = _PiecePreview(
             self._renderer,
             size=(_PiecePreview.CELL * _PiecePreview.PREVIEW_COLS,
@@ -575,13 +576,14 @@ class GameScreen(Screen, IView):
         panel.add_widget(self._next_preview)
 
         # Hold piece
-        panel.add_widget(Label(
+        self._lbl_hold = Label(
             text=i18n.t("hold"),
             font_size="14sp",
             color=(0.8, 0.8, 0.8, 1),
             size_hint=(1, None),
             height=22,
-        ))
+        )
+        panel.add_widget(self._lbl_hold)
         self._hold_preview = _PiecePreview(
             self._renderer,
             size=(_PiecePreview.CELL * _PiecePreview.PREVIEW_COLS,
@@ -616,6 +618,15 @@ class GameScreen(Screen, IView):
         root.add_widget(panel)
 
         self.add_widget(root)
+
+    def _refresh_labels(self) -> None:
+        self._lbl_score.text = f"{i18n.t('score')}: {self._model.score}"
+        self._lbl_level.text = f"{i18n.t('level')}: {self._model.level}"
+        self._lbl_lines.text = f"{i18n.t('lines')}: {self._model.lines_cleared}"
+        self._lbl_next.text = i18n.t("next")
+        self._lbl_hold.text = i18n.t("hold")
+        self._btn_pause.text = i18n.t("resume") if self._model.is_paused else i18n.t("pause")
+        self._btn_quit.text = i18n.t("quit")
 
     def _update_bg(self, *_: Any) -> None:
         self._bg_rect.pos = self.pos
