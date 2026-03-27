@@ -159,9 +159,6 @@ class ITetris(Subject, ABC):
     @abstractmethod
     def tick_interval(self) -> float:
         """Seconds between automatic gravity ticks at the current level.
-
-        Starts at ``BASE_TICK_INTERVAL`` (level 1) and shrinks by 0.1 s per
-        level, down to a minimum of ``MIN_TICK_INTERVAL``.
         """
 
     @abstractmethod

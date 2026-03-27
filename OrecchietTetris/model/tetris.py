@@ -8,11 +8,6 @@ from OrecchietTetris.model.bag_tetromino_factory import BagTetrominoFactory
 from OrecchietTetris.utils import EventType
 
 
-# Automatic tick loop timing
-BASE_TICK_INTERVAL: float = 1.0     # seconds at level 1
-MIN_TICK_INTERVAL: float = 0.05     # floor (reached at level 10+)
-LEVEL_SPEED_INCREMENT: float = 0.1  # seconds faster per level
-
 # Points awarded per number of lines cleared simultaneously
 _LINE_POINTS = {1: 100, 2: 300, 3: 500, 4: 800}
 
@@ -141,7 +136,7 @@ class Tetris(ITetris):
     @property
     def tick_interval(self) -> float:
         """Seconds between automatic gravity ticks at the current level."""
-        return max(MIN_TICK_INTERVAL, BASE_TICK_INTERVAL - (self._level - 1) * LEVEL_SPEED_INCREMENT)
+        return (0.8 - ((self._level - 1) * 0.007))**(self._level - 1)
 
     def play(self) -> None:
         """Start a fresh game and launch the automatic tick loop.
