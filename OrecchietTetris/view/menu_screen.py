@@ -18,10 +18,6 @@ from OrecchietTetris.view.interfaces import IView
 class MenuScreen(Screen, IView):
     """Main menu screen.
 
-    Shows a *New Game* button and a language toggle (EN / IT).
-    All text is sourced from ``python-i18n`` so switching the language
-    refreshes labels immediately.
-
     Parameters
     ----------
     on_new_game:

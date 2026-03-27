@@ -406,7 +406,8 @@ def test_two_lines_cleared_simultaneously(o_game: Tetris, observer: MockObserver
     o_game._board._current_row = 18
     o_game._board._current_col = 8
     o_game._lock_piece()
-    assert len(observer.data_for(EventType.LINES_CLEARED)) == 2
+    cleared_rows, _ = observer.data_for(EventType.LINES_CLEARED)
+    assert len(cleared_rows) == 2
 
 
 def test_score_increases_after_line_clear(o_game: Tetris) -> None:

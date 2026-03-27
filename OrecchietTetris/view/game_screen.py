@@ -144,13 +144,12 @@ class GameScreen(Screen, IView):
         self,
         model: ITetris,
         on_back_to_menu: Optional[Callable[[], None]] = None,
-        on_try_again: Optional[Callable[[], None]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self._model = model
         self._on_back_to_menu = on_back_to_menu
-        self._on_try_again = on_try_again
+        self._on_try_again = self._model.play
         self._renderer = BlockRenderer()
         self._keyboard: Any = None
         self._overlay: Optional[Widget] = None
@@ -167,6 +166,7 @@ class GameScreen(Screen, IView):
     def show(self) -> None:
         self.opacity = 1.0
         self.disabled = False
+        self._refresh_labels()
         self._model.attach(self)
         self._bind_keyboard()
 
@@ -181,7 +181,12 @@ class GameScreen(Screen, IView):
     # ------------------------------------------------------------------
 
     def update(self, event_type: EventType, data: Any) -> None:
-        # Kivy UI must be updated from the main thread
+        # Kivy UI must be updated from the main thread.
+        # For LINES_CLEARED we set the animation flag immediately (before any
+        # scheduled callbacks run) so the BOARD_UPDATED that is queued ahead of
+        # it does not overwrite the cells with the already-final model state.
+        if event_type == EventType.LINES_CLEARED:
+            self._clearing_animation = True
         Clock.schedule_once(lambda dt: self._dispatch(event_type, data))
 
     def _dispatch(self, event_type: EventType, data: Any) -> None:
@@ -194,9 +199,13 @@ class GameScreen(Screen, IView):
                 self._redraw_board()
         elif event_type == EventType.LINES_CLEARED:
             self._lbl_lines.text = f"{i18n.t('lines')}: {self._model.lines_cleared}"
-            rows: list[int] = list(data)
-            self._clearing_animation = True
-            self._animate_line_clear(rows, 0)
+            cleared_rows, pre_clear_grid = data
+            rows: list[int] = list(cleared_rows)
+            snapshot: list[list[tuple[float, float, float, float]]] = [
+                [self._renderer.colour(pre_clear_grid[r][c]) for c in range(BOARD_COLS)]
+                for r in range(BOARD_ROWS)
+            ]
+            self._animate_line_clear(rows, snapshot, 0)
         elif event_type == EventType.SCORE_UPDATED:
             self._lbl_score.text = f"{i18n.t('score')}: {self._model.score}"
             self._lbl_level.text = f"{i18n.t('level')}: {self._model.level}"
@@ -239,12 +248,54 @@ class GameScreen(Screen, IView):
                     colour = BLOCK_COLOURS[0]
                 self._board_cells[r][c].set_colour(colour)
 
-    def _animate_line_clear(self, rows: list[int], idx: int) -> None:
-        """Flash cleared rows white one by one (bottom to top), then redraw."""
+    def _animate_line_clear(
+        self,
+        rows: list[int],
+        snapshot: list[list[tuple[float, float, float, float]]],
+        idx: int,
+    ) -> None:
+        """Flash cleared rows white one by one (bottom to top), then start drop animation."""
         if idx < len(rows):
             for c in range(BOARD_COLS):
                 self._board_cells[rows[idx]][c].set_colour((1.0, 1.0, 1.0, 1.0))
-            Clock.schedule_once(lambda dt, i=idx: self._animate_line_clear(rows, i + 1), 0.2)
+            Clock.schedule_once(
+                lambda _dt, i=idx: self._animate_line_clear(rows, snapshot, i + 1), 0.1
+            )
+        else:
+            self._animate_drop(rows, snapshot, 0)
+
+    def _animate_drop(
+        self,
+        rows: list[int],
+        snapshot: list[list[tuple[float, float, float, float]]],
+        step: int,
+    ) -> None:
+        """Animate remaining rows falling to their final positions after line clear.
+
+        *rows* are the cleared row indices (sorted descending, bottom first).
+        At each step every non-cleared row moves down by one position until it
+        reaches its final resting place; then ``_redraw_board`` syncs with the model.
+        """
+        cleared_set: set[int] = set(rows)
+        empty = BLOCK_COLOURS[0]
+
+        for r in range(BOARD_ROWS):
+            for c in range(BOARD_COLS):
+                self._board_cells[r][c].set_colour(empty)
+
+        for r in range(BOARD_ROWS):
+            if r in cleared_set:
+                continue
+            drop_amount = sum(1 for cr in rows if cr > r)
+            current_pos = r + min(step, drop_amount)
+            if 0 <= current_pos < BOARD_ROWS:
+                for c in range(BOARD_COLS):
+                    self._board_cells[current_pos][c].set_colour(snapshot[r][c])
+
+        if step < len(rows):
+            Clock.schedule_once(
+                lambda *_: self._animate_drop(rows, snapshot, step + 1), 0.1
+            )
         else:
             self._clearing_animation = False
             self._redraw_board()
@@ -297,6 +348,11 @@ class GameScreen(Screen, IView):
                 self._model.resume()
             else:
                 self._model.pause()
+        elif key in ("q"):
+            if self._quit_overlay is None:
+                self._handle_quit()
+            else:
+                self._dismiss_quit_overlay()
         return True
 
     # ------------------------------------------------------------------
@@ -508,13 +564,14 @@ class GameScreen(Screen, IView):
             panel.add_widget(lbl)
 
         # Next piece
-        panel.add_widget(Label(
+        self._lbl_next = Label(
             text=i18n.t("next"),
             font_size="14sp",
             color=(0.8, 0.8, 0.8, 1),
             size_hint=(1, None),
             height=22,
-        ))
+        )
+        panel.add_widget(self._lbl_next)
         self._next_preview = _PiecePreview(
             self._renderer,
             size=(_PiecePreview.CELL * _PiecePreview.PREVIEW_COLS,
@@ -524,13 +581,14 @@ class GameScreen(Screen, IView):
         panel.add_widget(self._next_preview)
 
         # Hold piece
-        panel.add_widget(Label(
+        self._lbl_hold = Label(
             text=i18n.t("hold"),
             font_size="14sp",
             color=(0.8, 0.8, 0.8, 1),
             size_hint=(1, None),
             height=22,
-        ))
+        )
+        panel.add_widget(self._lbl_hold)
         self._hold_preview = _PiecePreview(
             self._renderer,
             size=(_PiecePreview.CELL * _PiecePreview.PREVIEW_COLS,
@@ -565,6 +623,15 @@ class GameScreen(Screen, IView):
         root.add_widget(panel)
 
         self.add_widget(root)
+
+    def _refresh_labels(self) -> None:
+        self._lbl_score.text = f"{i18n.t('score')}: {self._model.score}"
+        self._lbl_level.text = f"{i18n.t('level')}: {self._model.level}"
+        self._lbl_lines.text = f"{i18n.t('lines')}: {self._model.lines_cleared}"
+        self._lbl_next.text = i18n.t("next")
+        self._lbl_hold.text = i18n.t("hold")
+        self._btn_pause.text = i18n.t("resume") if self._model.is_paused else i18n.t("pause")
+        self._btn_quit.text = i18n.t("quit")
 
     def _update_bg(self, *_: Any) -> None:
         self._bg_rect.pos = self.pos
