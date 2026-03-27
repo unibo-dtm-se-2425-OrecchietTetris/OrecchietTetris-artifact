@@ -144,13 +144,12 @@ class GameScreen(Screen, IView):
         self,
         model: ITetris,
         on_back_to_menu: Optional[Callable[[], None]] = None,
-        on_try_again: Optional[Callable[[], None]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self._model = model
         self._on_back_to_menu = on_back_to_menu
-        self._on_try_again = on_try_again
+        self._on_try_again = self._model.play
         self._renderer = BlockRenderer()
         self._keyboard: Any = None
         self._overlay: Optional[Widget] = None
