@@ -1,3 +1,11 @@
+## [0.7.4](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.7.3...v0.7.4) (2026-03-27)
+
+
+### Bug Fixes
+
+* add countdown on try again and resume ([f1cdd5f](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/f1cdd5f8373c0ec11b850bfbcbb380bd1f7d67ae))
+* **model:** use official time formula for tick_interval ([fe6addf](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/fe6addf0a3270268fb21876633998e8d00f02448))
+
 ## [0.7.3](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.7.2...v0.7.3) (2026-03-27)
 
 
