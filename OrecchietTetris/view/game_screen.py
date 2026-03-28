@@ -253,9 +253,9 @@ class GameScreen(Screen, IView):
         elif event_type == EventType.GAME_OVER:
             self._show_game_over_overlay()
         elif event_type == EventType.PAUSED:
-            self._btn_pause.text = i18n.t("resume")
+            self._btn_pause.text = "\ue037"
         elif event_type == EventType.RESUMED:
-            self._btn_pause.text = i18n.t("pause")
+            self._btn_pause.text = "\ue034"
         elif event_type == EventType.HOLD_UPDATED:
             self._update_hold_preview()
 
@@ -426,8 +426,9 @@ class GameScreen(Screen, IView):
             color=(1, 1, 1, 1),
         ))
         btn_try = Button(
-            text=i18n.t("try_again"),
-            font_size="22sp",
+            text="\ue042",
+            font_name="MaterialIcons",
+            font_size="28sp",
             size_hint=(0.6, None),
             height=50,
             pos_hint={"center_x": 0.5},
@@ -437,8 +438,9 @@ class GameScreen(Screen, IView):
         overlay.add_widget(btn_try)
 
         btn = Button(
-            text=i18n.t("back_to_menu"),
-            font_size="22sp",
+            text="\ue88a",
+            font_name="MaterialIcons",
+            font_size="28sp",
             size_hint=(0.6, None),
             height=50,
             pos_hint={"center_x": 0.5},
@@ -639,8 +641,9 @@ class GameScreen(Screen, IView):
 
         # Pause button
         self._btn_pause = Button(
-            text=i18n.t("pause"),
-            font_size="16sp",
+            text="\ue034",
+            font_name="MaterialIcons",
+            font_size="24sp",
             size_hint=(1, None),
             height=40,
             background_color=(0.3, 0.3, 0.7, 1),
@@ -650,8 +653,9 @@ class GameScreen(Screen, IView):
 
         # Quit button
         self._btn_quit = Button(
-            text=i18n.t("quit"),
-            font_size="16sp",
+            text="\ue9ba",
+            font_name="MaterialIcons",
+            font_size="24sp",
             size_hint=(1, None),
             height=40,
             background_color=(0.7, 0.15, 0.15, 1),
@@ -670,8 +674,7 @@ class GameScreen(Screen, IView):
         self._lbl_lines.text = f"{i18n.t('lines')}: {self._model.lines_cleared}"
         self._lbl_next.text = i18n.t("next")
         self._lbl_hold.text = i18n.t("hold")
-        self._btn_pause.text = i18n.t("resume") if self._model.is_paused else i18n.t("pause")
-        self._btn_quit.text = i18n.t("quit")
+        self._btn_pause.text = "\ue037" if self._model.is_paused else "\ue034"
 
     def _update_bg(self, *_: Any) -> None:
         self._bg_rect.pos = self.pos
