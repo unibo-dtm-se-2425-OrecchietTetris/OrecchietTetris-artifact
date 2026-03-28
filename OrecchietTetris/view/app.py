@@ -4,6 +4,7 @@ from pathlib import Path
 
 import i18n  # type: ignore[import-untyped]
 from kivy.app import App  # type: ignore[import-untyped]
+from kivy.core.text import LabelBase  # type: ignore[import-untyped]
 from kivy.uix.screenmanager import ScreenManager, NoTransition  # type: ignore[import-untyped]
 
 from OrecchietTetris.model import Tetris
@@ -23,6 +24,11 @@ class TetrisApp(App):
     """
 
     def build(self) -> ScreenManager:
+        LabelBase.register(
+            name="MaterialIcons",
+            fn_regular=str(Path(__file__).parent / "assets" / "fonts" / "MaterialIcons-Regular.ttf"),
+        )
+
         i18n.set('file_format', 'yml')
         i18n.set('filename_format', '{locale}.{format}')
         i18n.set('load_path', [str(Path(__file__).parent / 'locales')])
