@@ -1,3 +1,10 @@
+## [0.7.5](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.7.4...v0.7.5) (2026-03-28)
+
+
+### Bug Fixes
+
+* replace buttons text with icons ([e972679](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/e972679f6cda5eafc4ec5d7a0c6f4aa5cd776492))
+
 ## [0.7.4](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.7.3...v0.7.4) (2026-03-27)
 
 
