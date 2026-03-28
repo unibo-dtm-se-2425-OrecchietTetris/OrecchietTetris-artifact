@@ -75,12 +75,12 @@ class MenuScreen(Screen, IView):
 
         # New-game button
         self._btn_new_game = Button(
-            text=i18n.t("new_game"),
+            text=f"[font=MaterialIcons]\ue037[/font]  {i18n.t('new_game')}",
+            markup=True,
             font_size="28sp",
             size_hint=(0.5, 0.15),
             pos_hint={"center_x": 0.5},
             background_color=(0.9, 0.5, 0.1, 1),
-            color=(0.05, 0.05, 0.10, 1),
         )
         self._btn_new_game.bind(on_release=self._handle_new_game)
         root.add_widget(self._btn_new_game)
@@ -122,8 +122,9 @@ class MenuScreen(Screen, IView):
 
         # Quit button
         self._btn_quit = Button(
-            text=i18n.t("quit"),
-            font_size="20sp",
+            text="\ue9ba",
+            font_name="MaterialIcons",
+            font_size="28sp",
             size_hint=(0.5, 0.12),
             pos_hint={"center_x": 0.5},
             background_color=(0.7, 0.15, 0.15, 1),
@@ -150,6 +151,5 @@ class MenuScreen(Screen, IView):
         self._refresh_labels()
 
     def _refresh_labels(self) -> None:
-        self._btn_new_game.text = i18n.t("new_game")
+        self._btn_new_game.text = f"[font=MaterialIcons]\ue037[/font]  {i18n.t('new_game')}"
         self._lang_label.text = i18n.t("language") + ":"
-        self._btn_quit.text = i18n.t("quit")
