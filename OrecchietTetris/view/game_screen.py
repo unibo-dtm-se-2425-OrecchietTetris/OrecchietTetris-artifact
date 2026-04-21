@@ -38,18 +38,33 @@ class _Cell(Widget):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         with self.canvas:
-            self._color_instr = Color(0.1, 0.1, 0.1, 1)
+            # Layer 1: solid background (always the empty-cell colour for filled
+            # cells so transparent image pixels match empty neighbours).
+            self._color_instr = Color(*BLOCK_COLOURS[0])
             self._rect = Rectangle(pos=self.pos, size=self.size)
+            # Layer 2: image drawn on top; hidden until set_texture is called.
+            self._img_color = Color(1.0, 1.0, 1.0, 0.0)
+            self._img_rect = Rectangle(pos=self.pos, size=self.size)
         self.bind(pos=self._redraw, size=self._redraw)
 
     def set_colour(self, rgba: tuple[float, float, float, float]) -> None:
         self._color_instr.rgba = rgba
-        self._rect.pos = self.pos
-        self._rect.size = self.size
+        self._rect.texture = None
+        self._img_color.a = 0.0
+
+    def set_texture(self, texture: object) -> None:
+        self._color_instr.rgba = BLOCK_COLOURS[0]
+        self._rect.texture = None
+        self._img_color.rgba = (1.0, 1.0, 1.0, 1.0)
+        self._img_rect.texture = texture
+        self._img_rect.pos = self.pos
+        self._img_rect.size = self.size
 
     def _redraw(self, *_: Any) -> None:
         self._rect.pos = self.pos
         self._rect.size = self.size
+        self._img_rect.pos = self.pos
+        self._img_rect.size = self.size
 
 
 # ---------------------------------------------------------------------------
@@ -109,10 +124,16 @@ class _PiecePreview(Widget):
                 pr = row_offset + r
                 pc = col_offset + c
                 if 0 <= pr < self.PREVIEW_ROWS and 0 <= pc < self.PREVIEW_COLS and val != 0:
-                    rgba = self._renderer.colour(val)
                     if greyed:
+                        rgba = self._renderer.colour(val)
                         rgba = (rgba[0] * 0.4, rgba[1] * 0.4, rgba[2] * 0.4, 0.6)
-                    self._cells[pr][pc].set_colour(rgba)
+                        self._cells[pr][pc].set_colour(rgba)
+                    else:
+                        tex = self._renderer.texture(val)
+                        if tex is not None:
+                            self._cells[pr][pc].set_texture(tex)
+                        else:
+                            self._cells[pr][pc].set_colour(self._renderer.colour(val))
 
 
 # ---------------------------------------------------------------------------
@@ -150,6 +171,7 @@ class GameScreen(Screen, IView):
         self._model = model
         self._on_back_to_menu = on_back_to_menu
         self._renderer = BlockRenderer()
+        self._renderer.preload_textures()
         self._keyboard: Any = None
         self._overlay: Optional[Widget] = None
         self._quit_overlay: Optional[Widget] = None
@@ -242,8 +264,8 @@ class GameScreen(Screen, IView):
             self._lbl_lines.text = f"{i18n.t('lines')}: {self._model.lines_cleared}"
             cleared_rows, pre_clear_grid = data
             rows: list[int] = list(cleared_rows)
-            snapshot: list[list[tuple[float, float, float, float]]] = [
-                [self._renderer.colour(pre_clear_grid[r][c]) for c in range(BOARD_COLS)]
+            snapshot: list[list[int]] = [
+                [pre_clear_grid[r][c] for c in range(BOARD_COLS)]
                 for r in range(BOARD_ROWS)
             ]
             self._animate_line_clear(rows, snapshot, 0)
@@ -262,6 +284,14 @@ class GameScreen(Screen, IView):
     # ------------------------------------------------------------------
     # Board rendering
     # ------------------------------------------------------------------
+
+    def _render_cell(self, row: int, col: int, val: int) -> None:
+        """Paint board cell at (row, col) using preloaded texture if available, else colour."""
+        tex = self._renderer.texture(val) if val != 0 else None
+        if tex is not None:
+            self._board_cells[row][col].set_texture(tex)
+        else:
+            self._board_cells[row][col].set_colour(self._renderer.colour(val))
 
     def _redraw_board(self) -> None:
         """Repaint every cell from the model's grid + shadow."""
@@ -282,17 +312,16 @@ class GameScreen(Screen, IView):
             for c in range(BOARD_COLS):
                 cell_val = grid[r][c] if r < len(grid) and c < len(grid[r]) else 0
                 if cell_val != 0:
-                    colour = self._renderer.colour(cell_val)
+                    self._render_cell(r, c, cell_val)
                 elif (r, c) in shadow_cells:
-                    colour = self._renderer.shadow_colour()
+                    self._board_cells[r][c].set_colour(self._renderer.shadow_colour())
                 else:
-                    colour = BLOCK_COLOURS[0]
-                self._board_cells[r][c].set_colour(colour)
+                    self._board_cells[r][c].set_colour(BLOCK_COLOURS[0])
 
     def _animate_line_clear(
         self,
         rows: list[int],
-        snapshot: list[list[tuple[float, float, float, float]]],
+        snapshot: list[list[int]],
         idx: int,
     ) -> None:
         """Flash cleared rows white one by one (bottom to top), then start drop animation."""
@@ -308,7 +337,7 @@ class GameScreen(Screen, IView):
     def _animate_drop(
         self,
         rows: list[int],
-        snapshot: list[list[tuple[float, float, float, float]]],
+        snapshot: list[list[int]],
         step: int,
     ) -> None:
         """Animate remaining rows falling to their final positions after line clear.
@@ -331,7 +360,9 @@ class GameScreen(Screen, IView):
             current_pos = r + min(step, drop_amount)
             if 0 <= current_pos < BOARD_ROWS:
                 for c in range(BOARD_COLS):
-                    self._board_cells[current_pos][c].set_colour(snapshot[r][c])
+                    val = snapshot[r][c]
+                    if val != 0:
+                        self._render_cell(current_pos, c, val)
 
         if step < len(rows):
             Clock.schedule_once(
