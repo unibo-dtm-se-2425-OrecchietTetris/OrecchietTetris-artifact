@@ -4,6 +4,7 @@ from typing import Any, Callable, Optional
 
 from kivy.uix.screenmanager import Screen  # type: ignore[import-untyped]
 from kivy.uix.boxlayout import BoxLayout  # type: ignore[import-untyped]
+from kivy.uix.anchorlayout import AnchorLayout  # type: ignore[import-untyped]
 from kivy.uix.gridlayout import GridLayout  # type: ignore[import-untyped]
 from kivy.uix.label import Label  # type: ignore[import-untyped]
 from kivy.uix.button import Button  # type: ignore[import-untyped]
@@ -158,6 +159,8 @@ class GameScreen(Screen, IView):
         self._clearing_animation: bool = False
         self._countdown_overlay: Optional[Widget] = None
         self._on_try_again = self.start_with_countdown
+        self._root: BoxLayout
+        self._board_widget: GridLayout
         self._build_ui()
 
     # ------------------------------------------------------------------
@@ -542,28 +545,35 @@ class GameScreen(Screen, IView):
             self._bg_rect = Rectangle(pos=self.pos, size=self.size)
         self.bind(pos=self._update_bg, size=self._update_bg)
 
-        root = BoxLayout(orientation="horizontal", spacing=10, padding=10)
+        cell_size = self._calc_cell_size()
+        board_w = BOARD_COLS * cell_size + (BOARD_COLS - 1)  # cells + gaps
+        board_h = BOARD_ROWS * cell_size + (BOARD_ROWS - 1)
+        total_width = board_w + PANEL_WIDTH + 10 + 20   # board + panel + spacing + padding
+        total_height = board_h + 20                     # board + padding top + bottom
+        root = BoxLayout(
+            orientation="horizontal",
+            spacing=10,
+            padding=10,
+            size_hint=(None, None),
+            width=total_width,
+            height=total_height,
+        )
+        self._root = root
 
         # ---- Board ----
-        board_widget = GridLayout(
+        self._board_widget = GridLayout(
             cols=BOARD_COLS,
             rows=BOARD_ROWS,
             size_hint=(None, None),
-            size=(BOARD_COLS * CELL_SIZE, BOARD_ROWS * CELL_SIZE),
-            row_force_default=True,
-            row_default_height=CELL_SIZE,
-            col_force_default=True,
-            col_default_width=CELL_SIZE,
+            size=(board_w, board_h),
             spacing=1,
         )
+        board_widget = self._board_widget
 
         for r in range(BOARD_ROWS):
             row_cells: list[_Cell] = []
             for c in range(BOARD_COLS):
-                cell = _Cell(
-                    size=(CELL_SIZE, CELL_SIZE),
-                    size_hint=(None, None),
-                )
+                cell = _Cell(size_hint=(1, 1))
                 board_widget.add_widget(cell)
                 row_cells.append(cell)
             self._board_cells.append(row_cells)
@@ -666,7 +676,10 @@ class GameScreen(Screen, IView):
         panel.add_widget(Widget())  # spacer
         root.add_widget(panel)
 
-        self.add_widget(root)
+        outer = AnchorLayout(anchor_x="center", anchor_y="center")
+        outer.add_widget(root)
+        self.add_widget(outer)
+        Window.bind(on_resize=self._on_window_resize)
 
     def _refresh_labels(self) -> None:
         self._lbl_score.text = f"{i18n.t('score')}: {self._model.score}"
@@ -675,6 +688,21 @@ class GameScreen(Screen, IView):
         self._lbl_next.text = i18n.t("next")
         self._lbl_hold.text = i18n.t("hold")
         self._btn_pause.text = "\ue037" if self._model.is_paused else "\ue034"
+
+    def _calc_cell_size(self) -> float:
+        win_w, win_h = Window.size
+        # Subtract spacing pixels from available space before dividing
+        available_h = win_h - 20 - (BOARD_ROWS - 1)   # root padding + inter-cell gaps
+        available_w = win_w - PANEL_WIDTH - 30 - (BOARD_COLS - 1)  # panel + spacing + padding + gaps
+        return max(10.0, min(available_h / BOARD_ROWS, available_w / BOARD_COLS))
+
+    def _on_window_resize(self, _window: Any, _w: int, _h: int) -> None:
+        cell_size = self._calc_cell_size()
+        board_w = BOARD_COLS * cell_size + (BOARD_COLS - 1)
+        board_h = BOARD_ROWS * cell_size + (BOARD_ROWS - 1)
+        self._board_widget.size = (board_w, board_h)
+        self._root.width = board_w + PANEL_WIDTH + 10 + 20
+        self._root.height = board_h + 20
 
     def _update_bg(self, *_: Any) -> None:
         self._bg_rect.pos = self.pos
