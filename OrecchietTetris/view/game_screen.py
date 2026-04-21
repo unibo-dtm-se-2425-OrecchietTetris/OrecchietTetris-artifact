@@ -27,6 +27,7 @@ BOARD_ROWS = 20
 BOARD_COLS = 10
 CELL_SIZE = 30          # pixels
 PANEL_WIDTH = 160       # right-side info panel
+BOARD_PADDING = 10      # padding + border around the board
 
 
 # ---------------------------------------------------------------------------
@@ -53,10 +54,10 @@ class _Cell(Widget):
         self._rect.texture = None
         self._img_color.a = 0.0
 
-    def set_texture(self, texture: object) -> None:
+    def set_texture(self, texture: object, alpha: float = 1.0) -> None:
         self._color_instr.rgba = BLOCK_COLOURS[0]
         self._rect.texture = None
-        self._img_color.rgba = (1.0, 1.0, 1.0, 1.0)
+        self._img_color.rgba = (1.0, 1.0, 1.0, alpha)
         self._img_rect.texture = texture
         self._img_rect.pos = self.pos
         self._img_rect.size = self.size
@@ -75,9 +76,9 @@ class _Cell(Widget):
 class _PiecePreview(Widget):
     """Renders a 4×4 preview of a tetromino shape."""
 
-    PREVIEW_COLS = 4
-    PREVIEW_ROWS = 4
-    CELL = 20
+    PREVIEW_COLS = 6
+    PREVIEW_ROWS = 6
+    CELL = PREVIEW_ROWS * PREVIEW_COLS
 
     def __init__(self, renderer: BlockRenderer, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -123,16 +124,14 @@ class _PiecePreview(Widget):
                 pr = row_offset + r
                 pc = col_offset + c
                 if 0 <= pr < self.PREVIEW_ROWS and 0 <= pc < self.PREVIEW_COLS and val != 0:
-                    if greyed:
-                        rgba = self._renderer.colour(val)
-                        rgba = (rgba[0] * 0.4, rgba[1] * 0.4, rgba[2] * 0.4, 0.6)
-                        self._cells[pr][pc].set_colour(rgba)
+                    tex = self._renderer.texture(val)
+                    if tex is not None:
+                        self._cells[pr][pc].set_texture(tex, alpha=0.35 if greyed else 1.0)
                     else:
-                        tex = self._renderer.texture(val)
-                        if tex is not None:
-                            self._cells[pr][pc].set_texture(tex)
-                        else:
-                            self._cells[pr][pc].set_colour(self._renderer.colour(val))
+                        rgba = self._renderer.colour(val)
+                        if greyed:
+                            rgba = (rgba[0] * 0.4, rgba[1] * 0.4, rgba[2] * 0.4, 0.6)
+                        self._cells[pr][pc].set_colour(rgba)
 
 
 # ---------------------------------------------------------------------------
@@ -162,7 +161,7 @@ class _TitledBox(Widget):
         self._content_widget: Optional[Widget] = None
 
         with self.canvas:
-            Color(0.25, 0.25, 0.40, 1)
+            Color(0.35, 0.35, 0.55, 1)
             self._border_instr = Line(width=1.5)
             Color(0.05, 0.05, 0.10, 1)
             self._title_bg_instr = Rectangle()
@@ -259,6 +258,7 @@ class GameScreen(Screen, IView):
         self._countdown_overlay: Optional[Widget] = None
         self._on_try_again = self.start_with_countdown
         self._root: BoxLayout
+        self._board_container: AnchorLayout
         self._board_widget: GridLayout
         self._hold_box: _TitledBox
         self._next_box: _TitledBox
@@ -658,8 +658,8 @@ class GameScreen(Screen, IView):
         cell_size = self._calc_cell_size()
         board_w = BOARD_COLS * cell_size + (BOARD_COLS - 1)
         board_h = BOARD_ROWS * cell_size + (BOARD_ROWS - 1)
-        total_width = board_w + 2 * PANEL_WIDTH + 60   # board + 2 panels + 2×20 spacings + 2×10 padding
-        total_height = board_h + 20                    # board + padding top + bottom
+        total_width = board_w + 2 * BOARD_PADDING + 2 * PANEL_WIDTH + 60
+        total_height = board_h + 2 * BOARD_PADDING + 20
         root = BoxLayout(
             orientation="horizontal",
             spacing=20,
@@ -764,7 +764,30 @@ class GameScreen(Screen, IView):
                 row_cells.append(cell)
             self._board_cells.append(row_cells)
 
-        root.add_widget(board_widget)
+        board_container = AnchorLayout(
+            size_hint=(None, None),
+            size=(board_w + 2 * BOARD_PADDING, board_h + 2 * BOARD_PADDING),
+        )
+        with board_container.canvas.before:
+            Color(0.35, 0.35, 0.55, 1)
+            self._board_border = Line(
+                rectangle=(
+                    board_container.x, board_container.y,
+                    board_container.width, board_container.height
+                ),
+                width=2,
+            )
+
+        def _update_border(*_: Any) -> None:
+            self._board_border.rectangle = (
+                board_container.x, board_container.y,
+                board_container.width, board_container.height,
+            )
+
+        board_container.bind(pos=_update_border, size=_update_border)
+        board_container.add_widget(board_widget)
+        self._board_container = board_container
+        root.add_widget(board_container)
 
         # ----------------------------------------------------------------
         # Right column: next box (top) + spacer + pause / quit buttons
@@ -797,9 +820,9 @@ class GameScreen(Screen, IView):
         self._btn_pause = Button(
             text="\ue034",
             font_name="MaterialIcons",
-            font_size="24sp",
+            font_size="30sp",
             size_hint=(1, None),
-            height=40,
+            height=60,
             background_color=(0.3, 0.3, 0.7, 1),
         )
         self._btn_pause.bind(on_release=self._handle_pause)
@@ -809,9 +832,9 @@ class GameScreen(Screen, IView):
         self._btn_quit = Button(
             text="\ue9ba",
             font_name="MaterialIcons",
-            font_size="24sp",
+            font_size="30sp",
             size_hint=(1, None),
-            height=40,
+            height=60,
             background_color=(0.7, 0.15, 0.15, 1),
         )
         self._btn_quit.bind(on_release=self._handle_quit)
@@ -833,9 +856,10 @@ class GameScreen(Screen, IView):
         self._btn_pause.text = "\ue037" if self._model.is_paused else "\ue034"
 
     def _calc_cell_size(self) -> float:
-        win_w, win_h = Window.size
-        available_h = win_h - 20 - (BOARD_ROWS - 1)          # root v-padding + inter-cell gaps
-        available_w = win_w - 2 * PANEL_WIDTH - 60 - (BOARD_COLS - 1)  # 2 panels + 2×20 spacings + 2×10 padding + gaps
+        win_w: float = float(Window.size[0])
+        win_h: float = float(Window.size[1])
+        available_h = win_h - 20 - 2 * BOARD_PADDING - (BOARD_ROWS - 1)
+        available_w = win_w - 2 * PANEL_WIDTH - 60 - 2 * BOARD_PADDING - (BOARD_COLS - 1)
         return max(10.0, min(available_h / BOARD_ROWS, available_w / BOARD_COLS))
 
     def _on_window_resize(self, _window: Any, _w: int, _h: int) -> None:
@@ -843,8 +867,9 @@ class GameScreen(Screen, IView):
         board_w = BOARD_COLS * cell_size + (BOARD_COLS - 1)
         board_h = BOARD_ROWS * cell_size + (BOARD_ROWS - 1)
         self._board_widget.size = (board_w, board_h)
-        self._root.width = board_w + 2 * PANEL_WIDTH + 60
-        self._root.height = board_h + 20
+        self._board_container.size = (board_w + 2 * BOARD_PADDING, board_h + 2 * BOARD_PADDING)
+        self._root.width = board_w + 2 * BOARD_PADDING + 2 * PANEL_WIDTH + 60
+        self._root.height = board_h + 2 * BOARD_PADDING + 20
 
     def _update_bg(self, *_: Any) -> None:
         self._bg_rect.pos = self.pos

@@ -161,6 +161,7 @@ class Tetris(ITetris):
         if self._game_thread is not None:
             self._game_thread.join(timeout=2.0)
             self._game_thread = None
+        self._paused = False
 
     def _game_loop(self) -> None:
         """Background thread body: sleeps for ``tick_interval`` then calls ``tick()``.
