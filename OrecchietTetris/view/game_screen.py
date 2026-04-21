@@ -9,7 +9,7 @@ from kivy.uix.gridlayout import GridLayout  # type: ignore[import-untyped]
 from kivy.uix.label import Label  # type: ignore[import-untyped]
 from kivy.uix.button import Button  # type: ignore[import-untyped]
 from kivy.uix.widget import Widget  # type: ignore[import-untyped]
-from kivy.graphics import Color, Rectangle  # type: ignore[import-untyped]
+from kivy.graphics import Color, Rectangle, Line  # type: ignore[import-untyped]
 from kivy.clock import Clock  # type: ignore[import-untyped]
 from kivy.core.window import Window  # type: ignore[import-untyped]
 
@@ -71,25 +71,23 @@ class _PiecePreview(Widget):
         self._build()
 
     def _build(self) -> None:
-        for r in range(self.PREVIEW_ROWS):
+        for _ in range(self.PREVIEW_ROWS):
             row_cells: list[_Cell] = []
-            for c in range(self.PREVIEW_COLS):
-                cell = _Cell(
-                    size=(self.CELL, self.CELL),
-                    size_hint=(None, None),
-                    pos=(self.x + c * self.CELL, self.y + (self.PREVIEW_ROWS - 1 - r) * self.CELL),
-                )
+            for _ in range(self.PREVIEW_COLS):
+                cell = _Cell(size_hint=(None, None))
                 self.add_widget(cell)
                 row_cells.append(cell)
             self._cells.append(row_cells)
-        self.bind(pos=self._reposition)
+        self.bind(pos=self._reposition, size=self._reposition)
 
     def _reposition(self, *_: Any) -> None:
+        cs = min(self.width / self.PREVIEW_COLS, self.height / self.PREVIEW_ROWS)
         for r, row_cells in enumerate(self._cells):
             for c, cell in enumerate(row_cells):
+                cell.size = (cs, cs)
                 cell.pos = (
-                    self.x + c * self.CELL,
-                    self.y + (self.PREVIEW_ROWS - 1 - r) * self.CELL,
+                    self.x + c * cs,
+                    self.y + (self.PREVIEW_ROWS - 1 - r) * cs,
                 )
 
     def set_piece(self, shape: Optional[list[list[Any]]], greyed: bool = False) -> None:
@@ -114,6 +112,85 @@ class _PiecePreview(Widget):
                     if greyed:
                         rgba = (rgba[0] * 0.4, rgba[1] * 0.4, rgba[2] * 0.4, 0.6)
                     self._cells[pr][pc].set_colour(rgba)
+
+
+# ---------------------------------------------------------------------------
+# Titled box widget (bordered panel with overlapping title label)
+# ---------------------------------------------------------------------------
+
+class _TitledBox(Widget):
+    """A bordered panel whose title label straddles the top edge.
+
+    Layout
+    ------
+    The border rectangle starts at ``_TITLE_H // 2`` pixels below the widget's
+    top, so the title ``Label`` — drawn at the very top — visually overlaps it,
+    producing the classic "fieldset / legend" look.  A filled rectangle behind
+    the label erases the border segment it covers.
+
+    The single content widget (added via :meth:`set_content`) is centred inside
+    the available area below the title.
+    """
+
+    _TITLE_H: int = 22
+    _PAD: int = 8
+
+    def __init__(self, title: str, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self._title_str = title
+        self._content_widget: Optional[Widget] = None
+
+        with self.canvas:
+            Color(0.25, 0.25, 0.40, 1)
+            self._border_instr = Line(width=1.5)
+            Color(0.05, 0.05, 0.10, 1)
+            self._title_bg_instr = Rectangle()
+
+        self._lbl = Label(
+            text=title,
+            font_size="13sp",
+            bold=True,
+            color=(0.70, 0.70, 0.90, 1),
+            size_hint=(None, None),
+            size=(80, self._TITLE_H),
+        )
+        self.add_widget(self._lbl)
+        self.bind(pos=self._layout, size=self._layout)
+
+    def set_title(self, text: str) -> None:
+        self._title_str = text
+        self._lbl.text = text
+        self._layout()
+
+    def set_content(self, widget: Widget) -> None:
+        self._content_widget = widget
+        self.add_widget(widget)
+        self._layout()
+
+    def _layout(self, *_: Any) -> None:
+        th = self._TITLE_H
+        pad = self._PAD
+        x, y, w, h = self.x, self.y, self.width, self.height
+
+        # Border occupies the bottom (h − th//2) of the widget height.
+        border_h = h - th // 2
+        self._border_instr.rectangle = (x + 1, y + 1, w - 2, border_h - 2)
+
+        # Title label straddles the top edge of the border rectangle.
+        lbl_w = max(60, min(w - 2 * pad, len(self._title_str) * 9 + 20))
+        lbl_x = x + (w - lbl_w) / 2
+        lbl_y = y + h - th
+        self._lbl.size = (lbl_w, th)
+        self._lbl.pos = (lbl_x, lbl_y)
+        self._title_bg_instr.pos = (lbl_x, lbl_y)
+        self._title_bg_instr.size = (lbl_w, th)
+
+        # Content: fills the usable area inside the border, below the title.
+        if self._content_widget is not None:
+            avail_w = w - 2 * pad
+            avail_h = border_h - th // 2 - 2 * pad
+            self._content_widget.size = (avail_w, avail_h)
+            self._content_widget.pos = (x + pad, y + pad)
 
 
 # ---------------------------------------------------------------------------
@@ -161,6 +238,8 @@ class GameScreen(Screen, IView):
         self._on_try_again = self.start_with_countdown
         self._root: BoxLayout
         self._board_widget: GridLayout
+        self._hold_box: _TitledBox
+        self._next_box: _TitledBox
         self._build_ui()
 
     # ------------------------------------------------------------------
@@ -546,13 +625,13 @@ class GameScreen(Screen, IView):
         self.bind(pos=self._update_bg, size=self._update_bg)
 
         cell_size = self._calc_cell_size()
-        board_w = BOARD_COLS * cell_size + (BOARD_COLS - 1)  # cells + gaps
+        board_w = BOARD_COLS * cell_size + (BOARD_COLS - 1)
         board_h = BOARD_ROWS * cell_size + (BOARD_ROWS - 1)
-        total_width = board_w + PANEL_WIDTH + 10 + 20   # board + panel + spacing + padding
-        total_height = board_h + 20                     # board + padding top + bottom
+        total_width = board_w + 2 * PANEL_WIDTH + 60   # board + 2 panels + 2×20 spacings + 2×10 padding
+        total_height = board_h + 20                    # board + padding top + bottom
         root = BoxLayout(
             orientation="horizontal",
-            spacing=10,
+            spacing=20,
             padding=10,
             size_hint=(None, None),
             width=total_width,
@@ -560,7 +639,83 @@ class GameScreen(Screen, IView):
         )
         self._root = root
 
-        # ---- Board ----
+        # ----------------------------------------------------------------
+        # Left column: hold box (top) + spacer + stats box (bottom)
+        # ----------------------------------------------------------------
+        left_panel = BoxLayout(
+            orientation="vertical",
+            size_hint=(None, 1),
+            width=PANEL_WIDTH,
+            spacing=10,
+            padding=[0, 40, 0, 40],
+        )
+
+        preview_px = PANEL_WIDTH - 2 * _TitledBox._PAD  # fill interior width → square box
+        box_h = preview_px + _TitledBox._TITLE_H + 2 * _TitledBox._PAD  # 118 px
+
+        # Hold box
+        self._hold_box = _TitledBox(
+            title=i18n.t("hold"),
+            size_hint=(1, None),
+            height=box_h,
+        )
+        self._hold_preview = _PiecePreview(
+            self._renderer,
+            size=(preview_px, preview_px),
+            size_hint=(None, None),
+        )
+        self._hold_box.set_content(self._hold_preview)
+        left_panel.add_widget(self._hold_box)
+
+        left_panel.add_widget(Widget())  # flexible spacer
+
+        # Stats box
+        lbl_h = 30
+        stats_inner_h = 3 * lbl_h
+        stats_inner_w = PANEL_WIDTH - 2 * _TitledBox._PAD
+        stats_inner = BoxLayout(
+            orientation="vertical",
+            size_hint=(None, None),
+            size=(stats_inner_w, stats_inner_h),
+        )
+        self._lbl_score = Label(
+            text=f"{i18n.t('score')}: 0",
+            font_size="16sp",
+            color=(1, 1, 1, 1),
+            size_hint=(1, None),
+            height=lbl_h,
+        )
+        self._lbl_level = Label(
+            text=f"{i18n.t('level')}: 1",
+            font_size="16sp",
+            color=(1, 1, 1, 1),
+            size_hint=(1, None),
+            height=lbl_h,
+        )
+        self._lbl_lines = Label(
+            text=f"{i18n.t('lines')}: 0",
+            font_size="16sp",
+            color=(1, 1, 1, 1),
+            size_hint=(1, None),
+            height=lbl_h,
+        )
+        for lbl in (self._lbl_score, self._lbl_level, self._lbl_lines):
+            stats_inner.add_widget(lbl)
+
+        stats_box_h = stats_inner_h + _TitledBox._TITLE_H + 2 * _TitledBox._PAD
+        stats_box = _TitledBox(
+            title="",
+            size_hint=(1, None),
+            height=stats_box_h,
+        )
+        stats_box.set_content(stats_inner)
+        left_panel.add_widget(stats_box)
+
+        root.add_widget(left_panel)
+
+        # ----------------------------------------------------------------
+        # Centre column: the board
+        # ----------------------------------------------------------------
         self._board_widget = GridLayout(
             cols=BOARD_COLS,
             rows=BOARD_ROWS,
@@ -580,74 +735,32 @@ class GameScreen(Screen, IView):
 
         root.add_widget(board_widget)
 
-        # ---- Right panel ----
-        panel = BoxLayout(
+        # ----------------------------------------------------------------
+        # Right column: next box (top) + spacer + pause / quit buttons
+        # ----------------------------------------------------------------
+        right_panel = BoxLayout(
             orientation="vertical",
             size_hint=(None, 1),
             width=PANEL_WIDTH,
-            spacing=12,
-            padding=8,
+            spacing=10,
+            padding=[0, 40, 0, 40],
         )
 
-        # Score / level / lines
-        self._lbl_score = Label(
-            text=f"{i18n.t('score')}: 0",
-            font_size="16sp",
-            color=(1, 1, 1, 1),
+        # Next box (mirrors hold box height)
+        self._next_box = _TitledBox(
+            title=i18n.t("next"),
             size_hint=(1, None),
-            height=30,
+            height=box_h,
         )
-        self._lbl_level = Label(
-            text=f"{i18n.t('level')}: 1",
-            font_size="16sp",
-            color=(1, 1, 1, 1),
-            size_hint=(1, None),
-            height=30,
-        )
-        self._lbl_lines = Label(
-            text=f"{i18n.t('lines')}: 0",
-            font_size="16sp",
-            color=(1, 1, 1, 1),
-            size_hint=(1, None),
-            height=30,
-        )
-
-        for lbl in (self._lbl_score, self._lbl_level, self._lbl_lines):
-            panel.add_widget(lbl)
-
-        # Next piece
-        self._lbl_next = Label(
-            text=i18n.t("next"),
-            font_size="14sp",
-            color=(0.8, 0.8, 0.8, 1),
-            size_hint=(1, None),
-            height=22,
-        )
-        panel.add_widget(self._lbl_next)
         self._next_preview = _PiecePreview(
             self._renderer,
-            size=(_PiecePreview.CELL * _PiecePreview.PREVIEW_COLS,
-                  _PiecePreview.CELL * _PiecePreview.PREVIEW_ROWS),
+            size=(preview_px, preview_px),
             size_hint=(None, None),
         )
-        panel.add_widget(self._next_preview)
+        self._next_box.set_content(self._next_preview)
+        right_panel.add_widget(self._next_box)
 
-        # Hold piece
-        self._lbl_hold = Label(
-            text=i18n.t("hold"),
-            font_size="14sp",
-            color=(0.8, 0.8, 0.8, 1),
-            size_hint=(1, None),
-            height=22,
-        )
-        panel.add_widget(self._lbl_hold)
-        self._hold_preview = _PiecePreview(
-            self._renderer,
-            size=(_PiecePreview.CELL * _PiecePreview.PREVIEW_COLS,
-                  _PiecePreview.CELL * _PiecePreview.PREVIEW_ROWS),
-            size_hint=(None, None),
-        )
-        panel.add_widget(self._hold_preview)
+        right_panel.add_widget(Widget())  # flexible spacer
 
         # Pause button
         self._btn_pause = Button(
@@ -659,7 +772,7 @@ class GameScreen(Screen, IView):
             background_color=(0.3, 0.3, 0.7, 1),
         )
         self._btn_pause.bind(on_release=self._handle_pause)
-        panel.add_widget(self._btn_pause)
+        right_panel.add_widget(self._btn_pause)
 
         # Quit button
         self._btn_quit = Button(
@@ -671,10 +784,9 @@ class GameScreen(Screen, IView):
             background_color=(0.7, 0.15, 0.15, 1),
         )
         self._btn_quit.bind(on_release=self._handle_quit)
-        panel.add_widget(self._btn_quit)
+        right_panel.add_widget(self._btn_quit)
 
-        panel.add_widget(Widget())  # spacer
-        root.add_widget(panel)
+        root.add_widget(right_panel)
 
         outer = AnchorLayout(anchor_x="center", anchor_y="center")
         outer.add_widget(root)
@@ -685,15 +797,14 @@ class GameScreen(Screen, IView):
         self._lbl_score.text = f"{i18n.t('score')}: {self._model.score}"
         self._lbl_level.text = f"{i18n.t('level')}: {self._model.level}"
         self._lbl_lines.text = f"{i18n.t('lines')}: {self._model.lines_cleared}"
-        self._lbl_next.text = i18n.t("next")
-        self._lbl_hold.text = i18n.t("hold")
+        self._hold_box.set_title(i18n.t("hold"))
+        self._next_box.set_title(i18n.t("next"))
         self._btn_pause.text = "\ue037" if self._model.is_paused else "\ue034"
 
     def _calc_cell_size(self) -> float:
         win_w, win_h = Window.size
-        # Subtract spacing pixels from available space before dividing
-        available_h = win_h - 20 - (BOARD_ROWS - 1)   # root padding + inter-cell gaps
-        available_w = win_w - PANEL_WIDTH - 30 - (BOARD_COLS - 1)  # panel + spacing + padding + gaps
+        available_h = win_h - 20 - (BOARD_ROWS - 1)          # root v-padding + inter-cell gaps
+        available_w = win_w - 2 * PANEL_WIDTH - 60 - (BOARD_COLS - 1)  # 2 panels + 2×20 spacings + 2×10 padding + gaps
         return max(10.0, min(available_h / BOARD_ROWS, available_w / BOARD_COLS))
 
     def _on_window_resize(self, _window: Any, _w: int, _h: int) -> None:
@@ -701,7 +812,7 @@ class GameScreen(Screen, IView):
         board_w = BOARD_COLS * cell_size + (BOARD_COLS - 1)
         board_h = BOARD_ROWS * cell_size + (BOARD_ROWS - 1)
         self._board_widget.size = (board_w, board_h)
-        self._root.width = board_w + PANEL_WIDTH + 10 + 20
+        self._root.width = board_w + 2 * PANEL_WIDTH + 60
         self._root.height = board_h + 20
 
     def _update_bg(self, *_: Any) -> None:
