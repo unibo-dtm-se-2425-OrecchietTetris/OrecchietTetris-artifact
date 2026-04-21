@@ -197,19 +197,24 @@ class Tetris(ITetris):
         return moved
 
     def rotate(self) -> bool:
-        """Rotate the current piece clockwise. Returns True if rotation was applied."""
+        """Rotate the current piece clockwise with wall-kick. Returns True if rotation was applied."""
         if not self.is_running:
             return False
         piece = self._board.current_piece
         if piece is None:
             return False
         piece.rotate()
-        if not self._board.is_valid_position(piece, self._board.current_row, self._board.current_col):
-            for _ in range(3):
-                piece.rotate()
-            return False
-        self.notify(EventType.BOARD_UPDATED)
-        return True
+        row = self._board.current_row
+        col = self._board.current_col
+        for offset in (0, -1, 1, -2, 2, -3, 3, -4, 4):
+            if self._board.is_valid_position(piece, row, col + offset):
+                if offset != 0:
+                    self._board.move_falling_piece(row, col + offset)
+                self.notify(EventType.BOARD_UPDATED)
+                return True
+        for _ in range(3):
+            piece.rotate()
+        return False
 
     def hard_drop(self) -> None:
         """Instantly drop the current piece to the lowest valid row and lock it."""

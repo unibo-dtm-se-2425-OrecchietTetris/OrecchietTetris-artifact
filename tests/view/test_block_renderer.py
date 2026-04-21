@@ -6,9 +6,9 @@ def test_block_images_covers_all_piece_types():
     assert set(BLOCK_IMAGES.keys()) == {1, 2, 3, 4, 5, 6, 7}
 
 
-def test_block_images_have_png_extension():
+def test_block_images_have_webp_extension():
     for val, path in BLOCK_IMAGES.items():
-        assert path.endswith(".png"), f"Expected .png for value {val}, got {path}"
+        assert path.endswith(".webp"), f"Expected .webp for value {val}, got {path}"
 
 
 def test_block_colours_covers_empty_and_all_pieces():

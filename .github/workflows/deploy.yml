@@ -63,7 +63,7 @@ jobs:
           poetry run poe coverage-report
           poetry run poe coverage-html
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: coverage-report-${{ github.sha }}
           path: htmlcov
@@ -175,7 +175,7 @@ jobs:
 
       - name: Run semantic-release
         id: semantic
-        uses: cycjimmy/semantic-release-action@v4
+        uses: cycjimmy/semantic-release-action@v6
         with:
           extra_plugins: |
             @semantic-release/changelog
