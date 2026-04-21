@@ -7,9 +7,8 @@ from kivy.uix.boxlayout import BoxLayout  # type: ignore[import-untyped]
 from kivy.uix.anchorlayout import AnchorLayout  # type: ignore[import-untyped]
 from kivy.uix.gridlayout import GridLayout  # type: ignore[import-untyped]
 from kivy.uix.label import Label  # type: ignore[import-untyped]
-from kivy.uix.button import Button  # type: ignore[import-untyped]
 from kivy.uix.widget import Widget  # type: ignore[import-untyped]
-from kivy.graphics import Color, Rectangle, Line  # type: ignore[import-untyped]
+from kivy.graphics import Color, Rectangle, Line, RoundedRectangle  # type: ignore[import-untyped]
 from kivy.clock import Clock  # type: ignore[import-untyped]
 from kivy.core.window import Window  # type: ignore[import-untyped]
 
@@ -18,6 +17,7 @@ from OrecchietTetris.model.interfaces import ITetris
 from OrecchietTetris.view.interfaces import IView
 import i18n  # type: ignore[import-untyped]
 from OrecchietTetris.view.block_renderer import BlockRenderer, BLOCK_COLOURS
+from OrecchietTetris.view.widgets import Cell, PiecePreview, TitledBox, RoundedButton
 
 
 # ---------------------------------------------------------------------------
@@ -27,190 +27,7 @@ BOARD_ROWS = 20
 BOARD_COLS = 10
 CELL_SIZE = 30          # pixels
 PANEL_WIDTH = 160       # right-side info panel
-BOARD_PADDING = 10      # padding + border around the board
-
-
-# ---------------------------------------------------------------------------
-# Helper: tiny coloured rectangle widget used for individual board cells
-# ---------------------------------------------------------------------------
-
-class _Cell(Widget):
-    """A single board cell drawn via canvas instructions."""
-
-    def __init__(self, **kwargs: Any) -> None:
-        super().__init__(**kwargs)
-        with self.canvas:
-            # Layer 1: solid background (always the empty-cell colour for filled
-            # cells so transparent image pixels match empty neighbours).
-            self._color_instr = Color(*BLOCK_COLOURS[0])
-            self._rect = Rectangle(pos=self.pos, size=self.size)
-            # Layer 2: image drawn on top; hidden until set_texture is called.
-            self._img_color = Color(1.0, 1.0, 1.0, 0.0)
-            self._img_rect = Rectangle(pos=self.pos, size=self.size)
-        self.bind(pos=self._redraw, size=self._redraw)
-
-    def set_colour(self, rgba: tuple[float, float, float, float]) -> None:
-        self._color_instr.rgba = rgba
-        self._rect.texture = None
-        self._img_color.a = 0.0
-
-    def set_texture(self, texture: object, alpha: float = 1.0) -> None:
-        self._color_instr.rgba = BLOCK_COLOURS[0]
-        self._rect.texture = None
-        self._img_color.rgba = (1.0, 1.0, 1.0, alpha)
-        self._img_rect.texture = texture
-        self._img_rect.pos = self.pos
-        self._img_rect.size = self.size
-
-    def _redraw(self, *_: Any) -> None:
-        self._rect.pos = self.pos
-        self._rect.size = self.size
-        self._img_rect.pos = self.pos
-        self._img_rect.size = self.size
-
-
-# ---------------------------------------------------------------------------
-# Small piece-preview widget (hold / next)
-# ---------------------------------------------------------------------------
-
-class _PiecePreview(Widget):
-    """Renders a 4×4 preview of a tetromino shape."""
-
-    PREVIEW_COLS = 6
-    PREVIEW_ROWS = 6
-    CELL = PREVIEW_ROWS * PREVIEW_COLS
-
-    def __init__(self, renderer: BlockRenderer, **kwargs: Any) -> None:
-        super().__init__(**kwargs)
-        self._renderer = renderer
-        self._cells: list[list[_Cell]] = []
-        self._build()
-
-    def _build(self) -> None:
-        for _ in range(self.PREVIEW_ROWS):
-            row_cells: list[_Cell] = []
-            for _ in range(self.PREVIEW_COLS):
-                cell = _Cell(size_hint=(None, None))
-                self.add_widget(cell)
-                row_cells.append(cell)
-            self._cells.append(row_cells)
-        self.bind(pos=self._reposition, size=self._reposition)
-
-    def _reposition(self, *_: Any) -> None:
-        cs = min(self.width / self.PREVIEW_COLS, self.height / self.PREVIEW_ROWS)
-        for r, row_cells in enumerate(self._cells):
-            for c, cell in enumerate(row_cells):
-                cell.size = (cs, cs)
-                cell.pos = (
-                    self.x + c * cs,
-                    self.y + (self.PREVIEW_ROWS - 1 - r) * cs,
-                )
-
-    def set_piece(self, shape: Optional[list[list[Any]]], greyed: bool = False) -> None:
-        """Render *shape* centred in the preview grid.  *shape=None* clears."""
-        # Clear all cells
-        for row_cells in self._cells:
-            for cell in row_cells:
-                cell.set_colour(BLOCK_COLOURS[0])
-
-        if shape is None:
-            return
-
-        # Centre the shape
-        row_offset = (self.PREVIEW_ROWS - len(shape)) // 2
-        col_offset = (self.PREVIEW_COLS - len(shape[0])) // 2
-        for r, row in enumerate(shape):
-            for c, val in enumerate(row):
-                pr = row_offset + r
-                pc = col_offset + c
-                if 0 <= pr < self.PREVIEW_ROWS and 0 <= pc < self.PREVIEW_COLS and val != 0:
-                    tex = self._renderer.texture(val)
-                    if tex is not None:
-                        self._cells[pr][pc].set_texture(tex, alpha=0.35 if greyed else 1.0)
-                    else:
-                        rgba = self._renderer.colour(val)
-                        if greyed:
-                            rgba = (rgba[0] * 0.4, rgba[1] * 0.4, rgba[2] * 0.4, 0.6)
-                        self._cells[pr][pc].set_colour(rgba)
-
-
-# ---------------------------------------------------------------------------
-# Titled box widget (bordered panel with overlapping title label)
-# ---------------------------------------------------------------------------
-
-class _TitledBox(Widget):
-    """A bordered panel whose title label straddles the top edge.
-
-    Layout
-    ------
-    The border rectangle starts at ``_TITLE_H // 2`` pixels below the widget's
-    top, so the title ``Label`` — drawn at the very top — visually overlaps it,
-    producing the classic "fieldset / legend" look.  A filled rectangle behind
-    the label erases the border segment it covers.
-
-    The single content widget (added via :meth:`set_content`) is centred inside
-    the available area below the title.
-    """
-
-    _TITLE_H: int = 22
-    _PAD: int = 8
-
-    def __init__(self, title: str, **kwargs: Any) -> None:
-        super().__init__(**kwargs)
-        self._title_str = title
-        self._content_widget: Optional[Widget] = None
-
-        with self.canvas:
-            Color(0.35, 0.35, 0.55, 1)
-            self._border_instr = Line(width=1.5)
-            Color(0.05, 0.05, 0.10, 1)
-            self._title_bg_instr = Rectangle()
-
-        self._lbl = Label(
-            text=title,
-            font_size="13sp",
-            bold=True,
-            color=(0.70, 0.70, 0.90, 1),
-            size_hint=(None, None),
-            size=(80, self._TITLE_H),
-        )
-        self.add_widget(self._lbl)
-        self.bind(pos=self._layout, size=self._layout)
-
-    def set_title(self, text: str) -> None:
-        self._title_str = text
-        self._lbl.text = text
-        self._layout()
-
-    def set_content(self, widget: Widget) -> None:
-        self._content_widget = widget
-        self.add_widget(widget)
-        self._layout()
-
-    def _layout(self, *_: Any) -> None:
-        th = self._TITLE_H
-        pad = self._PAD
-        x, y, w, h = self.x, self.y, self.width, self.height
-
-        # Border occupies the bottom (h − th//2) of the widget height.
-        border_h = h - th // 2
-        self._border_instr.rectangle = (x + 1, y + 1, w - 2, border_h - 2)
-
-        # Title label straddles the top edge of the border rectangle.
-        lbl_w = max(60, min(w - 2 * pad, len(self._title_str) * 9 + 20))
-        lbl_x = x + (w - lbl_w) / 2
-        lbl_y = y + h - th
-        self._lbl.size = (lbl_w, th)
-        self._lbl.pos = (lbl_x, lbl_y)
-        self._title_bg_instr.pos = (lbl_x, lbl_y)
-        self._title_bg_instr.size = (lbl_w, th)
-
-        # Content: fills the usable area inside the border, below the title.
-        if self._content_widget is not None:
-            avail_w = w - 2 * pad
-            avail_h = border_h - th // 2 - 2 * pad
-            self._content_widget.size = (avail_w, avail_h)
-            self._content_widget.pos = (x + pad, y + pad)
+BOARD_PADDING = 12      # padding + border around the board
 
 
 # ---------------------------------------------------------------------------
@@ -253,15 +70,18 @@ class GameScreen(Screen, IView):
         self._overlay: Optional[Widget] = None
         self._quit_overlay: Optional[Widget] = None
 
-        self._board_cells: list[list[_Cell]] = []
+        self._board_cells: list[list[Cell]] = []
         self._clearing_animation: bool = False
         self._countdown_overlay: Optional[Widget] = None
         self._on_try_again = self.start_with_countdown
         self._root: BoxLayout
         self._board_container: AnchorLayout
         self._board_widget: GridLayout
-        self._hold_box: _TitledBox
-        self._next_box: _TitledBox
+        self._hold_box: TitledBox
+        self._next_box: TitledBox
+        self._title_score: Label
+        self._title_level: Label
+        self._title_lines: Label
         self._build_ui()
 
     # ------------------------------------------------------------------
@@ -343,7 +163,7 @@ class GameScreen(Screen, IView):
             if not self._clearing_animation:
                 self._redraw_board()
         elif event_type == EventType.LINES_CLEARED:
-            self._lbl_lines.text = f"{i18n.t('lines')}: {self._model.lines_cleared}"
+            self._lbl_lines.text = str(self._model.lines_cleared)
             cleared_rows, pre_clear_grid = data
             rows: list[int] = list(cleared_rows)
             snapshot: list[list[int]] = [
@@ -352,14 +172,14 @@ class GameScreen(Screen, IView):
             ]
             self._animate_line_clear(rows, snapshot, 0)
         elif event_type == EventType.SCORE_UPDATED:
-            self._lbl_score.text = f"{i18n.t('score')}: {self._model.score}"
-            self._lbl_level.text = f"{i18n.t('level')}: {self._model.level}"
+            self._lbl_score.text = str(self._model.score)
+            self._lbl_level.text = str(self._model.level)
         elif event_type == EventType.GAME_OVER:
             self._show_game_over_overlay()
         elif event_type == EventType.PAUSED:
-            self._btn_pause.text = "\ue037"
+            self._btn_pause.text = ""
         elif event_type == EventType.RESUMED:
-            self._btn_pause.text = "\ue034"
+            self._btn_pause.text = ""
         elif event_type == EventType.HOLD_UPDATED:
             self._update_hold_preview()
 
@@ -382,7 +202,6 @@ class GameScreen(Screen, IView):
         piece = self._model.current_piece
         cur_col = self._model.current_col
 
-        # Build a shadow overlay
         shadow_cells: set[tuple[int, int]] = set()
         if piece is not None:
             for r, row in enumerate(piece.shape):
@@ -538,8 +357,8 @@ class GameScreen(Screen, IView):
             font_size="26sp",
             color=(1, 1, 1, 1),
         ))
-        btn_try = Button(
-            text="\ue042",
+        btn_try = RoundedButton(
+            text="",
             font_name="MaterialIcons",
             font_size="28sp",
             size_hint=(0.6, None),
@@ -550,8 +369,8 @@ class GameScreen(Screen, IView):
         btn_try.bind(on_release=self._handle_try_again)
         overlay.add_widget(btn_try)
 
-        btn = Button(
-            text="\ue88a",
+        btn = RoundedButton(
+            text="",
             font_name="MaterialIcons",
             font_size="28sp",
             size_hint=(0.6, None),
@@ -577,8 +396,9 @@ class GameScreen(Screen, IView):
             self._overlay = None
         if self._on_try_again is not None:
             self._on_try_again()
+
     # ------------------------------------------------------------------
-    # Pause button callback
+    # Pause / quit
     # ------------------------------------------------------------------
 
     def _handle_pause(self, *_: Any) -> None:
@@ -616,10 +436,10 @@ class GameScreen(Screen, IView):
 
         btn_row = BoxLayout(orientation="horizontal", size_hint=(0.6, None),
                             height=50, pos_hint={"center_x": 0.5}, spacing=10)
-        btn_yes = Button(text=i18n.t("yes"), font_size="22sp",
-                         background_color=(0.7, 0.15, 0.15, 1))
-        btn_no = Button(text=i18n.t("no"), font_size="22sp",
-                        background_color=(0.3, 0.3, 0.7, 1))
+        btn_yes = RoundedButton(text=i18n.t("yes"), font_size="22sp",
+                                background_color=(0.7, 0.15, 0.15, 1))
+        btn_no = RoundedButton(text=i18n.t("no"), font_size="22sp",
+                               background_color=(0.3, 0.3, 0.7, 1))
         btn_yes.bind(on_release=self._confirm_quit)
         btn_no.bind(on_release=self._dismiss_quit_overlay)
         btn_row.add_widget(btn_yes)
@@ -681,16 +501,16 @@ class GameScreen(Screen, IView):
             padding=[0, 40, 0, 40],
         )
 
-        preview_px = PANEL_WIDTH - 2 * _TitledBox._PAD  # fill interior width → square box
-        box_h = preview_px + _TitledBox._TITLE_H + 2 * _TitledBox._PAD  # 118 px
+        preview_px = PANEL_WIDTH - 2 * TitledBox._PAD
+        box_h = preview_px + TitledBox._TITLE_H + 2 * TitledBox._PAD
 
         # Hold box
-        self._hold_box = _TitledBox(
+        self._hold_box = TitledBox(
             title=i18n.t("hold"),
             size_hint=(1, None),
             height=box_h,
         )
-        self._hold_preview = _PiecePreview(
+        self._hold_preview = PiecePreview(
             self._renderer,
             size=(preview_px, preview_px),
             size_hint=(None, None),
@@ -701,41 +521,64 @@ class GameScreen(Screen, IView):
         left_panel.add_widget(Widget())  # flexible spacer
 
         # Stats box
-        lbl_h = 30
-        stats_inner_h = 3 * lbl_h
-        stats_inner_w = PANEL_WIDTH - 2 * _TitledBox._PAD
+        title_h = TitledBox._TITLE_H
+        val_h = 40
+        stats_inner_h = 3 * (title_h + val_h)
+        stats_inner_w = PANEL_WIDTH - 2 * TitledBox._PAD
         stats_inner = BoxLayout(
             orientation="vertical",
             size_hint=(None, None),
             size=(stats_inner_w, stats_inner_h),
+            spacing=4,
         )
-        self._lbl_score = Label(
-            text=f"{i18n.t('score')}: 0",
-            font_size="16sp",
-            color=(1, 1, 1, 1),
-            size_hint=(1, None),
-            height=lbl_h,
-        )
-        self._lbl_level = Label(
-            text=f"{i18n.t('level')}: 1",
-            font_size="16sp",
-            color=(1, 1, 1, 1),
-            size_hint=(1, None),
-            height=lbl_h,
-        )
-        self._lbl_lines = Label(
-            text=f"{i18n.t('lines')}: 0",
-            font_size="16sp",
-            color=(1, 1, 1, 1),
-            size_hint=(1, None),
-            height=lbl_h,
-        )
-        for lbl in (self._lbl_score, self._lbl_level, self._lbl_lines):
-            stats_inner.add_widget(lbl)
 
-        stats_box_h = stats_inner_h + _TitledBox._TITLE_H + 2 * _TitledBox._PAD
-        stats_box = _TitledBox(
-            title="",
+        def _make_stats_title(text: str) -> Label:
+            return Label(
+                text=text,
+                font_size="13sp",
+                bold=True,
+                color=(0.70, 0.70, 0.90, 1),
+                size_hint=(1, None),
+                height=title_h,
+            )
+
+        def _make_stat_value_box(initial: str) -> tuple[BoxLayout, Label]:
+            box = BoxLayout(size_hint=(1, None), height=val_h)
+            with box.canvas.before:
+                Color(*BLOCK_COLOURS[0])
+                bg = RoundedRectangle(pos=box.pos, size=box.size, radius=[12])
+            box.bind(
+                pos=lambda w, _: setattr(bg, 'pos', w.pos),
+                size=lambda w, _: setattr(bg, 'size', w.size),
+            )
+            lbl = Label(
+                text=initial,
+                font_size="22sp",
+                bold=True,
+                color=(1, 1, 1, 1),
+                size_hint=(1, 1),
+                halign="center",
+                valign="middle",
+            )
+            lbl.bind(size=lambda inst, s: setattr(inst, 'text_size', s))
+            box.add_widget(lbl)
+            return box, lbl
+
+        self._title_score = _make_stats_title(i18n.t('score'))
+        _box_score, self._lbl_score = _make_stat_value_box("0")
+        self._title_level = _make_stats_title(i18n.t('level'))
+        _box_level, self._lbl_level = _make_stat_value_box("1")
+        self._title_lines = _make_stats_title(i18n.t('lines'))
+        _box_lines, self._lbl_lines = _make_stat_value_box("0")
+        for w in (
+            self._title_score, _box_score,
+            self._title_level, _box_level,
+            self._title_lines, _box_lines,
+        ):
+            stats_inner.add_widget(w)
+
+        stats_box_h = stats_inner_h + TitledBox._TITLE_H + 2 * TitledBox._PAD
+        stats_box = TitledBox(
             size_hint=(1, None),
             height=stats_box_h,
         )
@@ -757,9 +600,9 @@ class GameScreen(Screen, IView):
         board_widget = self._board_widget
 
         for r in range(BOARD_ROWS):
-            row_cells: list[_Cell] = []
+            row_cells: list[Cell] = []
             for c in range(BOARD_COLS):
-                cell = _Cell(size_hint=(1, 1))
+                cell = Cell(size_hint=(1, 1))
                 board_widget.add_widget(cell)
                 row_cells.append(cell)
             self._board_cells.append(row_cells)
@@ -771,17 +614,19 @@ class GameScreen(Screen, IView):
         with board_container.canvas.before:
             Color(0.35, 0.35, 0.55, 1)
             self._board_border = Line(
-                rectangle=(
+                rounded_rectangle=(
                     board_container.x, board_container.y,
-                    board_container.width, board_container.height
+                    board_container.width, board_container.height,
+                    20,
                 ),
                 width=2,
             )
 
         def _update_border(*_: Any) -> None:
-            self._board_border.rectangle = (
+            self._board_border.rounded_rectangle = (
                 board_container.x, board_container.y,
                 board_container.width, board_container.height,
+                15,
             )
 
         board_container.bind(pos=_update_border, size=_update_border)
@@ -801,12 +646,12 @@ class GameScreen(Screen, IView):
         )
 
         # Next box (mirrors hold box height)
-        self._next_box = _TitledBox(
+        self._next_box = TitledBox(
             title=i18n.t("next"),
             size_hint=(1, None),
             height=box_h,
         )
-        self._next_preview = _PiecePreview(
+        self._next_preview = PiecePreview(
             self._renderer,
             size=(preview_px, preview_px),
             size_hint=(None, None),
@@ -817,8 +662,8 @@ class GameScreen(Screen, IView):
         right_panel.add_widget(Widget())  # flexible spacer
 
         # Pause button
-        self._btn_pause = Button(
-            text="\ue034",
+        self._btn_pause = RoundedButton(
+            text="",
             font_name="MaterialIcons",
             font_size="30sp",
             size_hint=(1, None),
@@ -829,8 +674,8 @@ class GameScreen(Screen, IView):
         right_panel.add_widget(self._btn_pause)
 
         # Quit button
-        self._btn_quit = Button(
-            text="\ue9ba",
+        self._btn_quit = RoundedButton(
+            text="",
             font_name="MaterialIcons",
             font_size="30sp",
             size_hint=(1, None),
@@ -848,12 +693,12 @@ class GameScreen(Screen, IView):
         Window.bind(on_resize=self._on_window_resize)
 
     def _refresh_labels(self) -> None:
-        self._lbl_score.text = f"{i18n.t('score')}: {self._model.score}"
-        self._lbl_level.text = f"{i18n.t('level')}: {self._model.level}"
-        self._lbl_lines.text = f"{i18n.t('lines')}: {self._model.lines_cleared}"
+        self._title_score.text = i18n.t('score')
+        self._title_level.text = i18n.t('level')
+        self._title_lines.text = i18n.t('lines')
         self._hold_box.set_title(i18n.t("hold"))
         self._next_box.set_title(i18n.t("next"))
-        self._btn_pause.text = "\ue037" if self._model.is_paused else "\ue034"
+        self._btn_pause.text = "" if self._model.is_paused else ""
 
     def _calc_cell_size(self) -> float:
         win_w: float = float(Window.size[0])
