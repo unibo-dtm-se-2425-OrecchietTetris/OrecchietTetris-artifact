@@ -8,6 +8,7 @@ from kivy.core.text import LabelBase  # type: ignore[import-untyped]
 from kivy.uix.screenmanager import ScreenManager, NoTransition  # type: ignore[import-untyped]
 
 from OrecchietTetris.model import Tetris
+from OrecchietTetris.audio.kivy_audio_controller import KivyAudioController
 from OrecchietTetris.view.menu_screen import MenuScreen
 from OrecchietTetris.view.game_screen import GameScreen
 
@@ -36,15 +37,19 @@ class TetrisApp(App):
         i18n.set('fallback', 'en')
 
         self._model = Tetris()
+        self._audio = KivyAudioController()
+        self._audio.play()
 
         self._sm = ScreenManager(transition=NoTransition())
 
         self._menu = MenuScreen(
             on_new_game=self._start_game,
+            audio=self._audio,
             name="menu",
         )
         self._game = GameScreen(
             model=self._model,
+            audio=self._audio,
             on_back_to_menu=self._back_to_menu,
             name="game",
         )
