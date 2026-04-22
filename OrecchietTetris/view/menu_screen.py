@@ -27,10 +27,12 @@ class MenuScreen(Screen, IView):
     def __init__(
         self,
         on_new_game: Optional[Callable[[], None]] = None,
+        on_leaderboard: Optional[Callable[[], None]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self._on_new_game = on_new_game
+        self._on_leaderboard = on_leaderboard
         self._build_ui()
 
     # ------------------------------------------------------------------
@@ -84,6 +86,18 @@ class MenuScreen(Screen, IView):
         )
         self._btn_new_game.bind(on_release=self._handle_new_game)
         root.add_widget(self._btn_new_game)
+
+        # Leaderboard button
+        self._btn_leaderboard = Button(
+            text=f"[font=MaterialIcons]\ue8b6[/font]  {i18n.t('leaderboard')}",
+            markup=True,
+            font_size="22sp",
+            size_hint=(0.5, 0.12),
+            pos_hint={"center_x": 0.5},
+            background_color=(0.2, 0.5, 0.8, 1),
+        )
+        self._btn_leaderboard.bind(on_release=self._handle_leaderboard)
+        root.add_widget(self._btn_leaderboard)
 
         # Language row
         lang_row = BoxLayout(orientation="horizontal", size_hint=(0.5, 0.1),
@@ -146,10 +160,15 @@ class MenuScreen(Screen, IView):
         if self._on_new_game is not None:
             self._on_new_game()
 
+    def _handle_leaderboard(self, *_args: Any) -> None:
+        if self._on_leaderboard is not None:
+            self._on_leaderboard()
+
     def _set_language(self, lang: str) -> None:
         i18n.set('locale', lang)
         self._refresh_labels()
 
     def _refresh_labels(self) -> None:
         self._btn_new_game.text = f"[font=MaterialIcons]\ue037[/font]  {i18n.t('new_game')}"
+        self._btn_leaderboard.text = f"[font=MaterialIcons]\ue8b6[/font]  {i18n.t('leaderboard')}"
         self._lang_label.text = i18n.t("language") + ":"
