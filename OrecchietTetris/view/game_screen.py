@@ -15,6 +15,7 @@ from kivy.core.window import Window  # type: ignore[import-untyped]
 from OrecchietTetris.utils import EventType
 from OrecchietTetris.model.interfaces import ITetris
 from OrecchietTetris.view.interfaces import IView
+from OrecchietTetris.audio.interfaces import IAudioController
 import i18n  # type: ignore[import-untyped]
 from OrecchietTetris.view.block_renderer import BlockRenderer, BLOCK_COLOURS
 
@@ -143,11 +144,13 @@ class GameScreen(Screen, IView):
     def __init__(
         self,
         model: ITetris,
+        audio: Optional[IAudioController] = None,
         on_back_to_menu: Optional[Callable[[], None]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self._model = model
+        self._audio = audio
         self._on_back_to_menu = on_back_to_menu
         self._renderer = BlockRenderer()
         self._keyboard: Any = None
@@ -388,6 +391,8 @@ class GameScreen(Screen, IView):
             self._model.hold()
         elif key in ("p", "escape"):
             self._handle_pause()
+        elif key == "m":
+            self._toggle_music()
         elif key in ("q"):
             if self._quit_overlay is None:
                 self._handle_quit()
@@ -473,6 +478,11 @@ class GameScreen(Screen, IView):
             self._show_countdown(self._model.resume)
         else:
             self._model.pause()
+
+    def _toggle_music(self, *_: Any) -> None:
+        if self._audio is not None:
+            self._audio.toggle()
+            self._btn_music.text = "\ue04f" if not self._audio.is_playing else "\ue050"
 
     def _handle_quit(self, *_: Any) -> None:
         if self._model.is_running and not self._model.is_paused:
@@ -650,6 +660,19 @@ class GameScreen(Screen, IView):
         )
         self._btn_pause.bind(on_release=self._handle_pause)
         panel.add_widget(self._btn_pause)
+
+        # Music toggle button
+        music_icon = "\ue050" if (self._audio is None or self._audio.is_playing) else "\ue04f"
+        self._btn_music = Button(
+            text=music_icon,
+            font_name="MaterialIcons",
+            font_size="24sp",
+            size_hint=(1, None),
+            height=40,
+            background_color=(0.2, 0.45, 0.2, 1),
+        )
+        self._btn_music.bind(on_release=self._toggle_music)
+        panel.add_widget(self._btn_music)
 
         # Quit button
         self._btn_quit = Button(
