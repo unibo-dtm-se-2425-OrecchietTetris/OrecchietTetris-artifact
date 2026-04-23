@@ -337,54 +337,30 @@ class GameScreen(Screen, IView):
     def _show_game_over_overlay(self) -> None:
         if self._overlay is not None:
             return
-        overlay = BoxLayout(
-            orientation="vertical",
-            padding=30,
-            spacing=15,
-            size=self.size,
-            pos=self.pos,
-            size_hint=(None, None),
+        dlg = DialogOverlay(
+            title=i18n.t("game_over"),
+            title_color=(0.9, 0.2, 0.2, 1),
         )
-        with overlay.canvas.before:
-            Color(0, 0, 0, 0.75)
-            Rectangle(pos=overlay.pos, size=overlay.size)
-
-        overlay.add_widget(Label(
-            text=i18n.t("game_over"),
-            font_size="40sp",
-            bold=True,
-            color=(0.9, 0.2, 0.2, 1),
-        ))
-        overlay.add_widget(Label(
-            text=f"{i18n.t('score')}: {self._model.score}",
-            font_size="26sp",
-            color=(1, 1, 1, 1),
-        ))
-        btn_try = RoundedButton(
-            text="",
+        dlg.add_label(
+            f"{i18n.t('score')}: {self._model.score}",
+            font_size="24sp",
+        )
+        dlg.add_button(
+            text="",
+            bg=(0.3, 0.3, 0.7, 1),
+            on_release=self._handle_try_again,
             font_name="MaterialIcons",
             font_size="28sp",
-            size_hint=(0.6, None),
-            height=50,
-            pos_hint={"center_x": 0.5},
-            background_color=(0.2, 0.7, 0.2, 1),
         )
-        btn_try.bind(on_release=self._handle_try_again)
-        overlay.add_widget(btn_try)
-
-        btn = RoundedButton(
+        dlg.add_button(
             text="",
+            bg=(0.7, 0.15, 0.15, 1),
+            on_release=self._handle_back_to_menu,
             font_name="MaterialIcons",
             font_size="28sp",
-            size_hint=(0.6, None),
-            height=50,
-            pos_hint={"center_x": 0.5},
-            background_color=(0.9, 0.5, 0.1, 1),
         )
-        btn.bind(on_release=self._handle_back_to_menu)
-        overlay.add_widget(btn)
-        self.add_widget(overlay)
-        self._overlay = overlay
+        self.add_widget(dlg)
+        self._overlay = dlg
 
     def _handle_back_to_menu(self, *_: Any) -> None:
         if self._overlay is not None:
