@@ -4,7 +4,7 @@ from typing import Any, Callable, Optional
 
 from kivy.uix.anchorlayout import AnchorLayout  # type: ignore[import-untyped]
 from kivy.uix.gridlayout import GridLayout  # type: ignore[import-untyped]
-from kivy.graphics import Color, Line  # type: ignore[import-untyped]
+from kivy.graphics import Color, RoundedRectangle  # type: ignore[import-untyped]
 from kivy.clock import Clock  # type: ignore[import-untyped]
 
 from OrecchietTetris.view.block_renderer import BlockRenderer, BLOCK_COLOURS
@@ -67,18 +67,16 @@ class BoardWidget(AnchorLayout):
             self._board_cells.append(row_cells)
 
         with self.canvas.before:
-            Color(0.35, 0.35, 0.55, 1)
-            self._board_border = Line(
-                rounded_rectangle=(self.x, self.y, self.width, self.height, 15),
-                width=2,
+            Color(0.3, 0.3, 0.7, 1)
+            self._board_bg_instr = RoundedRectangle(
+                pos=(self.x, self.y), size=(self.width, self.height), radius=[20]
             )
 
-        def _update_border(*_: Any) -> None:
-            self._board_border.rounded_rectangle = (
-                self.x, self.y, self.width, self.height, 15,
-            )
+        def _update_bg(*_: Any) -> None:
+            self._board_bg_instr.pos = (self.x, self.y)
+            self._board_bg_instr.size = (self.width, self.height)
 
-        self.bind(pos=_update_border, size=_update_border)
+        self.bind(pos=_update_bg, size=_update_bg)
         self.add_widget(self._board_widget)
 
     # ------------------------------------------------------------------
@@ -174,7 +172,7 @@ class BoardWidget(AnchorLayout):
     ) -> None:
         if idx < len(rows):
             for c in range(self._cols):
-                self._board_cells[rows[idx]][c].set_colour((1.0, 1.0, 1.0, 1.0))
+                self._board_cells[rows[idx]][c].set_colour((0.8, 0.8, 0.85, 1.0))
             Clock.schedule_once(
                 lambda _dt, i=idx: self._animate_flash(rows, snapshot, i + 1, on_done),
                 0.1,
