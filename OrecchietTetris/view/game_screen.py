@@ -126,7 +126,13 @@ class GameScreen(Screen, IView):
 
     def start_with_countdown(self) -> None:
         """Show a 3-2-1 countdown overlay then start a new game."""
-        self._show_countdown(self._model.play)
+        def _countdown_callback():
+            self._model.play()
+            self._update_hold_preview()
+            self._lbl_score.text = str(self._model.score)
+            self._lbl_level.text = str(self._model.level)
+            self._lbl_lines.text = str(self._model.lines_cleared)
+        self._show_countdown(_countdown_callback)
 
     # ------------------------------------------------------------------
     # Countdown overlay

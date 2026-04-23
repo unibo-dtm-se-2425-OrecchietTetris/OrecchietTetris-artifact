@@ -19,7 +19,7 @@ class Tetris(ITetris):
         super().__init__()
         self._factory: ITetrominoFactory = factory if factory is not None else BagTetrominoFactory()
         self._board: Board = Board()
-        self._next_piece: ITetromino = self._factory.create_tetromino()
+        self._next_piece: ITetromino = Tetromino()
         self._held_piece: Optional[ITetromino] = None
         self._can_hold: bool = True
         self._score: int = 0
@@ -114,6 +114,7 @@ class Tetris(ITetris):
         self._paused = False
         self._running = True
         self._factory.reset()
+        self._next_piece = self._factory.create_tetromino()
         self._spawn_piece()
 
     def pause(self) -> None:
