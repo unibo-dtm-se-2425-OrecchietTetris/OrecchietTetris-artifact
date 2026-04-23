@@ -6,8 +6,8 @@ from typing import ClassVar, Optional
 
 from OrecchietTetris.leaderboard.leaderboard_entry import LeaderboardEntry
 from OrecchietTetris.leaderboard.interfaces.ileaderboard_repository import ILeaderboardRepository
+from OrecchietTetris.utils.paths import ASSETS_DIR
 
-_DEFAULT_PATH = Path(__file__).parent.parent.parent / "assets" / "lb" / "leaderboard.csv"
 _CSV_FIELDS = ("name", "score", "level", "lines")
 
 
@@ -24,7 +24,7 @@ class CsvLeaderboardRepository(ILeaderboardRepository):
     def __init__(self, path: Optional[Path] = None) -> None:
         if hasattr(self, "_initialized"):
             return
-        self._path: Path = path if path is not None else _DEFAULT_PATH
+        self._path: Path = path if path is not None else ASSETS_DIR / "lb" / "leaderboard.csv"
         self._path.parent.mkdir(parents=True, exist_ok=True)
         self._initialized: bool = True
 

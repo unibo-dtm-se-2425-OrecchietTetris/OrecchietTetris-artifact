@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from typing import Any, Callable, Optional
 
 from kivy.uix.screenmanager import Screen  # type: ignore[import-untyped]
@@ -14,6 +13,7 @@ from kivy.clock import Clock  # type: ignore[import-untyped]
 from kivy.core.window import Window  # type: ignore[import-untyped]
 
 from OrecchietTetris.utils import EventType
+from OrecchietTetris.utils.paths import ASSETS_DIR
 from OrecchietTetris.model.interfaces import ITetris
 from OrecchietTetris.view.interfaces import IView
 from OrecchietTetris.leaderboard.interfaces import ILeaderboardRepository
@@ -29,8 +29,7 @@ from OrecchietTetris.view.widgets.board_widget import BOARD_ROWS, BOARD_COLS, BO
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-_ASSETS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
-GAME_SCREEN_BG: str = os.path.join(_ASSETS_DIR, "game_screen.webp")
+GAME_SCREEN_BG: str = str(ASSETS_DIR / "game_screen.webp")
 
 CELL_SIZE = 30          # pixels
 PANEL_WIDTH = 160       # right-side info panel

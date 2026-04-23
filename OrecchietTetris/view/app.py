@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import i18n  # type: ignore[import-untyped]
 from kivy.app import App  # type: ignore[import-untyped]
 from kivy.core.text import LabelBase  # type: ignore[import-untyped]
 from kivy.uix.screenmanager import ScreenManager, NoTransition  # type: ignore[import-untyped]
 
+from OrecchietTetris.utils.paths import ASSETS_DIR, LOCALES_DIR
 from OrecchietTetris.model import Tetris
 from OrecchietTetris.leaderboard.csv_leaderboard_repository import CsvLeaderboardRepository
 from OrecchietTetris.view.menu_screen import MenuScreen
@@ -27,17 +26,17 @@ class TetrisApp(App):
     """
 
     title = "OrecchietTetris"
-    icon = str(Path(__file__).parent / "assets" / "app_icon.webp")
+    icon = str(ASSETS_DIR / "app_icon.webp")
 
     def build(self) -> ScreenManager:
         LabelBase.register(
             name="MaterialIcons",
-            fn_regular=str(Path(__file__).parent / "assets" / "fonts" / "MaterialIcons-Regular.ttf"),
+            fn_regular=str(ASSETS_DIR / "fonts" / "MaterialIcons-Regular.ttf"),
         )
 
         i18n.set('file_format', 'yml')
         i18n.set('filename_format', '{locale}.{format}')
-        i18n.set('load_path', [str(Path(__file__).parent / 'locales')])
+        i18n.set('load_path', [str(LOCALES_DIR)])
         i18n.set('locale', 'en')
         i18n.set('fallback', 'en')
 

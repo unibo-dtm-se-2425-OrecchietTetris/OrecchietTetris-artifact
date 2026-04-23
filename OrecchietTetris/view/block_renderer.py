@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import os
 from typing import Optional
+
+from OrecchietTetris.utils.paths import ASSETS_DIR
 
 # ---------------------------------------------------------------------------
 # Mapping: tetromino colour integer → asset path
@@ -10,17 +11,9 @@ from typing import Optional
 #   1 = I   2 = O   3 = T   4 = S   5 = Z   6 = J   7 = L
 # ---------------------------------------------------------------------------
 
-_SQUARES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "squares")
+_SQUARES_DIR = ASSETS_DIR / "squares"
 
-BLOCK_IMAGES: dict[int, str] = {
-    1: os.path.join(_SQUARES_DIR, "1.webp"),
-    2: os.path.join(_SQUARES_DIR, "2.webp"),
-    3: os.path.join(_SQUARES_DIR, "3.webp"),
-    4: os.path.join(_SQUARES_DIR, "4.webp"),
-    5: os.path.join(_SQUARES_DIR, "5.webp"),
-    6: os.path.join(_SQUARES_DIR, "6.webp"),
-    7: os.path.join(_SQUARES_DIR, "7.webp"),
-}
+BLOCK_IMAGES: dict[int, str] = {i: str(_SQUARES_DIR / f"{i}.webp") for i in range(1, 8)}
 
 # Colour used to tint shadow (ghost piece) cells
 SHADOW_COLOUR: tuple[float, float, float, float] = (0.28, 0.28, 0.32, 1.0)
@@ -46,9 +39,10 @@ class BlockRenderer:
         """Upload all block images to GPU once. Must be called inside a Kivy context."""
         if self._textures:
             return
+        from pathlib import Path
         from kivy.core.image import Image as CoreImage  # type: ignore[import-untyped]
         for val, path in BLOCK_IMAGES.items():
-            if os.path.exists(path):
+            if Path(path).exists():
                 img = CoreImage(path, mipmap=False)
                 self._core_images.append(img)
                 self._textures[val] = img.texture
