@@ -614,7 +614,21 @@ class GameScreen(Screen, IView):
         self._next_box.set_content(self._next_preview)
         right_panel.add_widget(self._next_box)
 
-        right_panel.add_widget(Widget())  # flexible spacer
+        right_panel.add_widget(Widget())
+
+        # Music toggle button
+        if self._audio:
+            music_icon = "\ue050" if self._audio.is_playing else "\ue04f"
+            self._btn_music = RoundedButton(
+                text=music_icon,
+                font_name="MaterialIcons",
+                font_size="24sp",
+                size_hint=(1, None),
+                height=60,
+                background_color=(0.2, 0.45, 0.2, 1),
+            )
+            self._btn_music.bind(on_release=self._toggle_music)
+            right_panel.add_widget(self._btn_music)
 
         # Pause button
         self._btn_pause = RoundedButton(
@@ -627,19 +641,6 @@ class GameScreen(Screen, IView):
         )
         self._btn_pause.bind(on_release=self._handle_pause)
         right_panel.add_widget(self._btn_pause)
-
-        # Music toggle button
-        music_icon = "\ue050" if (self._audio is None or self._audio.is_playing) else "\ue04f"
-        self._btn_music = RoundedButton(
-            text=music_icon,
-            font_name="MaterialIcons",
-            font_size="24sp",
-            size_hint=(1, None),
-            height=40,
-            background_color=(0.2, 0.45, 0.2, 1),
-        )
-        self._btn_music.bind(on_release=self._toggle_music)
-        right_panel.add_widget(self._btn_music)
 
         # Quit button
         self._btn_quit = RoundedButton(
