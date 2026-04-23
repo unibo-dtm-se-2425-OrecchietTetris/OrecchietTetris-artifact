@@ -19,7 +19,7 @@ class Tetris(ITetris):
         super().__init__()
         self._factory: ITetrominoFactory = factory if factory is not None else BagTetrominoFactory()
         self._board: Board = Board()
-        self._next_piece: ITetromino = self._factory.create_tetromino()
+        self._next_piece: ITetromino = Tetromino()
         self._held_piece: Optional[ITetromino] = None
         self._can_hold: bool = True
         self._score: int = 0
@@ -114,6 +114,7 @@ class Tetris(ITetris):
         self._paused = False
         self._running = True
         self._factory.reset()
+        self._next_piece = self._factory.create_tetromino()
         self._spawn_piece()
 
     def pause(self) -> None:
@@ -161,6 +162,7 @@ class Tetris(ITetris):
         if self._game_thread is not None:
             self._game_thread.join(timeout=2.0)
             self._game_thread = None
+        self._paused = False
 
     def _game_loop(self) -> None:
         """Background thread body: sleeps for ``tick_interval`` then calls ``tick()``.
@@ -197,19 +199,24 @@ class Tetris(ITetris):
         return moved
 
     def rotate(self) -> bool:
-        """Rotate the current piece clockwise. Returns True if rotation was applied."""
+        """Rotate the current piece clockwise with wall-kick. Returns True if rotation was applied."""
         if not self.is_running:
             return False
         piece = self._board.current_piece
         if piece is None:
             return False
         piece.rotate()
-        if not self._board.is_valid_position(piece, self._board.current_row, self._board.current_col):
-            for _ in range(3):
-                piece.rotate()
-            return False
-        self.notify(EventType.BOARD_UPDATED)
-        return True
+        row = self._board.current_row
+        col = self._board.current_col
+        for offset in (0, -1, 1, -2, 2, -3, 3, -4, 4):
+            if self._board.is_valid_position(piece, row, col + offset):
+                if offset != 0:
+                    self._board.move_falling_piece(row, col + offset)
+                self.notify(EventType.BOARD_UPDATED)
+                return True
+        for _ in range(3):
+            piece.rotate()
+        return False
 
     def hard_drop(self) -> None:
         """Instantly drop the current piece to the lowest valid row and lock it."""

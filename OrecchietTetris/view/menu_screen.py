@@ -5,14 +5,13 @@ from typing import Any, Callable, Optional
 import i18n  # type: ignore[import-untyped]
 from kivy.uix.screenmanager import Screen  # type: ignore[import-untyped]
 from kivy.uix.boxlayout import BoxLayout  # type: ignore[import-untyped]
-from kivy.uix.button import Button  # type: ignore[import-untyped]
 from kivy.uix.label import Label  # type: ignore[import-untyped]
-from kivy.uix.togglebutton import ToggleButton  # type: ignore[import-untyped]
 from kivy.graphics import Color, Rectangle  # type: ignore[import-untyped]
 from kivy.app import App  # type: ignore[import-untyped]
 
 from OrecchietTetris.utils import EventType
 from OrecchietTetris.view.interfaces import IView
+from OrecchietTetris.view.widgets import RoundedButton, RoundedToggleButton
 
 
 class MenuScreen(Screen, IView):
@@ -46,7 +45,6 @@ class MenuScreen(Screen, IView):
         self.disabled = True
 
     def update(self, event_type: EventType, data: Any) -> None:
-        # The menu screen does not react to game events.
         pass
 
     # ------------------------------------------------------------------
@@ -63,7 +61,6 @@ class MenuScreen(Screen, IView):
 
         root = BoxLayout(orientation="vertical", padding=40, spacing=20)
 
-        # Title
         title = Label(
             text="OrecchietTetris",
             font_size="48sp",
@@ -73,9 +70,8 @@ class MenuScreen(Screen, IView):
         )
         root.add_widget(title)
 
-        # New-game button
-        self._btn_new_game = Button(
-            text=f"[font=MaterialIcons]\ue037[/font]  {i18n.t('new_game')}",
+        self._btn_new_game = RoundedButton(
+            text=f"[font=MaterialIcons][/font]  {i18n.t('new_game')}",
             markup=True,
             font_size="28sp",
             size_hint=(0.5, 0.15),
@@ -85,7 +81,6 @@ class MenuScreen(Screen, IView):
         self._btn_new_game.bind(on_release=self._handle_new_game)
         root.add_widget(self._btn_new_game)
 
-        # Language row
         lang_row = BoxLayout(orientation="horizontal", size_hint=(0.5, 0.1),
                              pos_hint={"center_x": 0.5}, spacing=10)
 
@@ -98,7 +93,7 @@ class MenuScreen(Screen, IView):
         self._lang_label = lang_label
         lang_row.add_widget(lang_label)
 
-        self._btn_en = ToggleButton(
+        self._btn_en = RoundedToggleButton(
             text="EN",
             group="language",
             state="down" if str(i18n.get('locale')) == "en" else "normal",
@@ -106,7 +101,7 @@ class MenuScreen(Screen, IView):
             size_hint=(0.3, 1),
             background_color=(0.2, 0.5, 0.8, 1),
         )
-        self._btn_it = ToggleButton(
+        self._btn_it = RoundedToggleButton(
             text="IT",
             group="language",
             state="down" if str(i18n.get('locale')) == "it" else "normal",
@@ -120,9 +115,8 @@ class MenuScreen(Screen, IView):
         lang_row.add_widget(self._btn_it)
         root.add_widget(lang_row)
 
-        # Quit button
-        self._btn_quit = Button(
-            text="\ue9ba",
+        self._btn_quit = RoundedButton(
+            text="",
             font_name="MaterialIcons",
             font_size="28sp",
             size_hint=(0.5, 0.12),
@@ -151,5 +145,5 @@ class MenuScreen(Screen, IView):
         self._refresh_labels()
 
     def _refresh_labels(self) -> None:
-        self._btn_new_game.text = f"[font=MaterialIcons]\ue037[/font]  {i18n.t('new_game')}"
+        self._btn_new_game.text = f"[font=MaterialIcons][/font]  {i18n.t('new_game')}"
         self._lang_label.text = i18n.t("language") + ":"

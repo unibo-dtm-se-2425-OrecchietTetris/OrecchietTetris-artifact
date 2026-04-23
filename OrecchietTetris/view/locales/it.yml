@@ -1,5 +1,5 @@
 it:
-  "new_game": "Nuova Partita"
+  "new_game": "Gioca"
   "language": "Lingua"
   "game_over": "Partita Finita"
   "score": "Punteggio"
@@ -7,6 +7,7 @@ it:
   "lines": "Righe"
   "hold": "Tieni"
   "next": "Prossimo"
+  "paused": "In Pausa"
   "quit_confirm": "Sei sicuro?"
   "yes": "Sì"
   "no": "No"

@@ -23,6 +23,9 @@ class TetrisApp(App):
       **MenuScreen** and stops the model loop.
     """
 
+    title = "OrecchietTetris"
+    icon = str(Path(__file__).parent / "assets" / "app_icon.webp")
+
     def build(self) -> ScreenManager:
         LabelBase.register(
             name="MaterialIcons",
