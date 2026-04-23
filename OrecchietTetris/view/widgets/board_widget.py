@@ -69,7 +69,7 @@ class BoardWidget(AnchorLayout):
         with self.canvas.before:
             Color(0.35, 0.35, 0.55, 1)
             self._board_border = Line(
-                rounded_rectangle=(self.x, self.y, self.width, self.height, 20),
+                rounded_rectangle=(self.x, self.y, self.width, self.height, 15),
                 width=2,
             )
 
@@ -91,6 +91,12 @@ class BoardWidget(AnchorLayout):
 
     @is_animating.setter
     def is_animating(self, value: bool) -> None:
+        """Allow callers to set the flag synchronously before Clock callbacks fire.
+
+        GameScreen.update() sets this True on the model thread when LINES_CLEARED
+        arrives, before scheduling _dispatch — ensuring BOARD_UPDATED callbacks
+        queued ahead of LINES_CLEARED see the flag already set.
+        """
         self._animating = value
 
     @property
