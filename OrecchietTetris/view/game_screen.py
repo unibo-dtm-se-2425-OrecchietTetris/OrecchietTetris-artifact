@@ -16,6 +16,7 @@ from OrecchietTetris.utils import EventType
 from OrecchietTetris.utils.paths import ASSETS_DIR
 from OrecchietTetris.model.interfaces import ITetris
 from OrecchietTetris.view.interfaces import IView
+from OrecchietTetris.audio.interfaces import IAudioController
 from OrecchietTetris.leaderboard.interfaces import ILeaderboardRepository
 from OrecchietTetris.leaderboard.leaderboard_entry import LeaderboardEntry
 import i18n  # type: ignore[import-untyped]
@@ -86,11 +87,13 @@ class GameScreen(Screen, IView):
         self,
         model: ITetris,
         repository: Optional[ILeaderboardRepository] = None,
+        audio: Optional[IAudioController] = None,
         on_back_to_menu: Optional[Callable[[], None]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self._model = model
+        self._audio = audio
         self._repo = repository
         self._on_back_to_menu = on_back_to_menu
         self._renderer = BlockRenderer()
@@ -282,6 +285,8 @@ class GameScreen(Screen, IView):
             self._model.hold()
         elif key in ("p", "escape"):
             self._handle_pause()
+        elif key == "m":
+            self._toggle_music()
         elif key in ("q"):
             if self._quit_overlay is None:
                 self._handle_quit()
@@ -392,6 +397,11 @@ class GameScreen(Screen, IView):
             self._show_countdown(self._model.resume)
         else:
             self._model.pause()
+
+    def _toggle_music(self, *_: Any) -> None:
+        if self._audio is not None:
+            self._audio.toggle()
+            self._btn_music.text = "\ue04f" if not self._audio.is_playing else "\ue050"
 
     # ------------------------------------------------------------------
     # Quit overlay
@@ -617,6 +627,19 @@ class GameScreen(Screen, IView):
         )
         self._btn_pause.bind(on_release=self._handle_pause)
         right_panel.add_widget(self._btn_pause)
+
+        # Music toggle button
+        music_icon = "\ue050" if (self._audio is None or self._audio.is_playing) else "\ue04f"
+        self._btn_music = RoundedButton(
+            text=music_icon,
+            font_name="MaterialIcons",
+            font_size="24sp",
+            size_hint=(1, None),
+            height=40,
+            background_color=(0.2, 0.45, 0.2, 1),
+        )
+        self._btn_music.bind(on_release=self._toggle_music)
+        right_panel.add_widget(self._btn_music)
 
         # Quit button
         self._btn_quit = RoundedButton(

@@ -8,6 +8,7 @@ from kivy.uix.screenmanager import ScreenManager, NoTransition  # type: ignore[i
 from OrecchietTetris.utils.paths import ASSETS_DIR, LOCALES_DIR
 from OrecchietTetris.model import Tetris
 from OrecchietTetris.leaderboard.csv_leaderboard_repository import CsvLeaderboardRepository
+from OrecchietTetris.audio.kivy_audio_controller import KivyAudioController
 from OrecchietTetris.view.menu_screen import MenuScreen
 from OrecchietTetris.view.game_screen import GameScreen
 from OrecchietTetris.view.leaderboard_screen import LeaderboardScreen
@@ -42,16 +43,20 @@ class TetrisApp(App):
 
         self._model = Tetris()
         self._repo = CsvLeaderboardRepository()
+        self._audio = KivyAudioController()
+        self._audio.play()
 
         self._sm = ScreenManager(transition=NoTransition())
 
         self._menu = MenuScreen(
             on_new_game=self._start_game,
             on_leaderboard=self._show_leaderboard,
+            audio=self._audio,
             name="menu",
         )
         self._game = GameScreen(
             model=self._model,
+            audio=self._audio,
             repository=self._repo,
             on_back_to_menu=self._back_to_menu,
             name="game",

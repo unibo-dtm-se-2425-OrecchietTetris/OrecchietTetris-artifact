@@ -5,13 +5,14 @@ from typing import Any, Callable, Optional
 import i18n  # type: ignore[import-untyped]
 from kivy.uix.screenmanager import Screen  # type: ignore[import-untyped]
 from kivy.uix.boxlayout import BoxLayout  # type: ignore[import-untyped]
-from kivy.uix.button import Button  # type: ignore[import-untyped]
 from kivy.uix.label import Label  # type: ignore[import-untyped]
+from kivy.uix.slider import Slider  # type: ignore[import-untyped]
 from kivy.graphics import Color, Rectangle  # type: ignore[import-untyped]
 from kivy.app import App  # type: ignore[import-untyped]
 
 from OrecchietTetris.utils import EventType
 from OrecchietTetris.view.interfaces import IView
+from OrecchietTetris.audio.interfaces import IAudioController
 from OrecchietTetris.view.widgets import RoundedButton, RoundedToggleButton
 
 
@@ -22,17 +23,21 @@ class MenuScreen(Screen, IView):
     ----------
     on_new_game:
         Called (no arguments) when the player presses *New Game*.
+    audio:
+        Optional audio controller; exposes a volume slider when provided.
     """
 
     def __init__(
         self,
         on_new_game: Optional[Callable[[], None]] = None,
         on_leaderboard: Optional[Callable[[], None]] = None,
+        audio: Optional[IAudioController] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self._on_new_game = on_new_game
         self._on_leaderboard = on_leaderboard
+        self._audio = audio
         self._build_ui()
 
     # ------------------------------------------------------------------
@@ -55,7 +60,6 @@ class MenuScreen(Screen, IView):
     # ------------------------------------------------------------------
 
     def _build_ui(self) -> None:
-        """Construct all child widgets."""
         with self.canvas.before:
             Color(0.05, 0.05, 0.10, 1)
             self._bg_rect = Rectangle(pos=self.pos, size=self.size)
@@ -85,7 +89,7 @@ class MenuScreen(Screen, IView):
         root.add_widget(self._btn_new_game)
 
         # Leaderboard button
-        self._btn_leaderboard = Button(
+        self._btn_leaderboard = RoundedButton(
             text=f"[font=MaterialIcons]\ue8b6[/font]  {i18n.t('leaderboard')}",
             markup=True,
             font_size="22sp",
@@ -95,6 +99,34 @@ class MenuScreen(Screen, IView):
         )
         self._btn_leaderboard.bind(on_release=self._handle_leaderboard)
         root.add_widget(self._btn_leaderboard)
+
+        # Volume row (only when an audio controller is provided)
+        if self._audio is not None:
+            vol_row = BoxLayout(
+                orientation="horizontal",
+                size_hint=(0.6, None),
+                height=40,
+                pos_hint={"center_x": 0.5},
+                spacing=10,
+            )
+            self._lbl_volume = Label(
+                text=f"[font=MaterialIcons]\ue050[/font]  {i18n.t('volume')}",
+                markup=True,
+                font_size="18sp",
+                color=(0.8, 0.8, 0.8, 1),
+                size_hint=(0.4, 1),
+            )
+            vol_row.add_widget(self._lbl_volume)
+            self._slider_volume = Slider(
+                min=0.0,
+                max=1.0,
+                value=self._audio.volume,
+                size_hint=(0.6, 1),
+                cursor_size=(20, 20),
+            )
+            self._slider_volume.bind(value=self._on_volume_change)
+            vol_row.add_widget(self._slider_volume)
+            root.add_widget(vol_row)
 
         # Language row
         lang_row = BoxLayout(orientation="horizontal", size_hint=(0.5, 0.1),
@@ -145,6 +177,10 @@ class MenuScreen(Screen, IView):
 
         self.add_widget(root)
 
+    def _on_volume_change(self, _slider: Any, value: float) -> None:
+        if self._audio is not None:
+            self._audio.set_volume(value)
+
     def _handle_quit(self, *_args: Any) -> None:
         App.get_running_app().stop()
 
@@ -168,3 +204,5 @@ class MenuScreen(Screen, IView):
         self._btn_new_game.text = f"[font=MaterialIcons]\ue037[/font]  {i18n.t('new_game')}"
         self._btn_leaderboard.text = f"[font=MaterialIcons]\ue8b6[/font]  {i18n.t('leaderboard')}"
         self._lang_label.text = i18n.t("language") + ":"
+        if self._audio is not None:
+            self._lbl_volume.text = f"[font=MaterialIcons]\ue050[/font]  {i18n.t('volume')}"
