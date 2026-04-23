@@ -4,11 +4,11 @@ from typing import Any, Optional
 
 from kivy.uix.widget import Widget  # type: ignore[import-untyped]
 from kivy.uix.label import Label  # type: ignore[import-untyped]
-from kivy.graphics import Color, Line  # type: ignore[import-untyped]
+from kivy.graphics import Color, RoundedRectangle  # type: ignore[import-untyped]
 
 
 class TitledBox(Widget):
-    """A bordered panel with an optional bold title label inside at the top."""
+    """A panel with an optional bold title label inside at the top."""
 
     _TITLE_H: int = 20
     _PAD: int = 12
@@ -19,8 +19,10 @@ class TitledBox(Widget):
         self._content_widget: Optional[Widget] = None
 
         with self.canvas:
-            Color(0.35, 0.35, 0.55, 1)
-            self._border_instr = Line(width=1.5)
+            Color(0.3, 0.3, 0.7, 1)
+            self._bg_instr = RoundedRectangle(
+                pos=(self.x, self.y), size=(self.width, self.height), radius=[20]
+            )
 
         self._lbl = Label(
             text=title or "",
@@ -50,7 +52,8 @@ class TitledBox(Widget):
         pad = self._PAD
         x, y, w, h = self.x, self.y, self.width, self.height
 
-        self._border_instr.rounded_rectangle = (x + 1, y + 1, w - 2, h - 2, 20)
+        self._bg_instr.pos = (x, y)
+        self._bg_instr.size = (w, h)
 
         if self._title_str:
             lbl_w = max(60, min(w - 2 * pad, len(self._title_str) * 9 + 20))
