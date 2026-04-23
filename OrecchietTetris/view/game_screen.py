@@ -16,7 +16,7 @@ from OrecchietTetris.utils import EventType
 from OrecchietTetris.model.interfaces import ITetris
 from OrecchietTetris.view.interfaces import IView
 import i18n  # type: ignore[import-untyped]
-from OrecchietTetris.view.block_renderer import BlockRenderer, BLOCK_COLOURS
+from OrecchietTetris.view.block_renderer import BlockRenderer, EMPTY_COLOUR
 from OrecchietTetris.view.widgets import (
     PiecePreview, TitledBox, RoundedButton, DialogOverlay, BoardWidget,
 )
@@ -126,7 +126,7 @@ class GameScreen(Screen, IView):
 
     def start_with_countdown(self) -> None:
         """Show a 3-2-1 countdown overlay then start a new game."""
-        def _countdown_callback():
+        def _countdown_callback() -> None:
             self._model.play()
             self._update_hold_preview()
             self._lbl_score.text = str(self._model.score)
@@ -509,7 +509,7 @@ class GameScreen(Screen, IView):
         def _make_stat_value_box(initial: str) -> tuple[BoxLayout, Label]:
             box = BoxLayout(size_hint=(1, None), height=val_h)
             with box.canvas.before:
-                Color(*BLOCK_COLOURS[0])
+                Color(*EMPTY_COLOUR)
                 bg = RoundedRectangle(pos=box.pos, size=box.size, radius=[12])
             box.bind(
                 pos=lambda w, _: setattr(bg, 'pos', w.pos),

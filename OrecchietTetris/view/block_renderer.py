@@ -25,10 +25,8 @@ BLOCK_IMAGES: dict[int, str] = {
 # Colour used to tint shadow (ghost piece) cells
 SHADOW_COLOUR: tuple[float, float, float, float] = (0.28, 0.28, 0.32, 1.0)
 
-# RGBA colours used as a fallback when image files are absent
-BLOCK_COLOURS: dict[int, tuple[float, float, float, float]] = {
-    0: (0.1, 0.1, 0.1, 1.0),   # empty cell
-}
+# RGBA colour for empty cells (fallback when no image is drawn)
+EMPTY_COLOUR: tuple[float, float, float, float] = (0.1, 0.1, 0.1, 1.0)
 
 
 class BlockRenderer:
@@ -59,9 +57,9 @@ class BlockRenderer:
         """Return the preloaded Kivy texture for *cell_value*, or *None*."""
         return self._textures.get(cell_value)
 
-    def colour(self, cell_value: int) -> tuple[float, float, float, float]:
-        """Return the RGBA 4-tuple for *cell_value* (0 = empty)."""
-        return BLOCK_COLOURS.get(cell_value, BLOCK_COLOURS[0])
+    def colour(self, _cell_value: int) -> tuple[float, float, float, float]:
+        """Return the RGBA 4-tuple for any cell (always the empty-cell colour)."""
+        return EMPTY_COLOUR
 
     def shadow_colour(self) -> tuple[float, float, float, float]:
         """Return the RGBA colour used for shadow (ghost piece) cells."""

@@ -7,7 +7,7 @@ from kivy.uix.gridlayout import GridLayout  # type: ignore[import-untyped]
 from kivy.graphics import Color, RoundedRectangle  # type: ignore[import-untyped]
 from kivy.clock import Clock  # type: ignore[import-untyped]
 
-from OrecchietTetris.view.block_renderer import BlockRenderer, BLOCK_COLOURS
+from OrecchietTetris.view.block_renderer import BlockRenderer, EMPTY_COLOUR
 from OrecchietTetris.view.widgets.cell import Cell
 from OrecchietTetris.model.interfaces import ITetromino
 
@@ -129,7 +129,7 @@ class BoardWidget(AnchorLayout):
                 elif (r, c) in shadow_cells:
                     self._board_cells[r][c].set_colour(self._renderer.shadow_colour())
                 else:
-                    self._board_cells[r][c].set_colour(BLOCK_COLOURS[0])
+                    self._board_cells[r][c].set_colour(EMPTY_COLOUR)
 
     def animate_line_clear(
         self,
@@ -188,7 +188,7 @@ class BoardWidget(AnchorLayout):
         on_done: Optional[Callable[[], None]],
     ) -> None:
         cleared_set: set[int] = set(rows)
-        empty = BLOCK_COLOURS[0]
+        empty = EMPTY_COLOUR
 
         for r in range(self._rows):
             for c in range(self._cols):

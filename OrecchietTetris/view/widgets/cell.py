@@ -5,7 +5,7 @@ from typing import Any
 from kivy.uix.widget import Widget  # type: ignore[import-untyped]
 from kivy.graphics import Color, Rectangle  # type: ignore[import-untyped]
 
-from OrecchietTetris.view.block_renderer import BLOCK_COLOURS
+from OrecchietTetris.view.block_renderer import EMPTY_COLOUR
 
 
 class Cell(Widget):
@@ -16,7 +16,7 @@ class Cell(Widget):
         with self.canvas:
             # Layer 1: solid background (always the empty-cell colour for filled
             # cells so transparent image pixels match empty neighbours).
-            self._color_instr = Color(*BLOCK_COLOURS[0])
+            self._color_instr = Color(*EMPTY_COLOUR)
             self._rect = Rectangle(pos=self.pos, size=self.size)
             # Layer 2: image drawn on top; hidden until set_texture is called.
             self._img_color = Color(1.0, 1.0, 1.0, 0.0)
@@ -29,7 +29,7 @@ class Cell(Widget):
         self._img_color.a = 0.0
 
     def set_texture(self, texture: object, alpha: float = 1.0) -> None:
-        self._color_instr.rgba = BLOCK_COLOURS[0]
+        self._color_instr.rgba = EMPTY_COLOUR
         self._rect.texture = None
         self._img_color.rgba = (1.0, 1.0, 1.0, alpha)
         self._img_rect.texture = texture

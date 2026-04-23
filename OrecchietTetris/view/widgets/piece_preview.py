@@ -4,7 +4,7 @@ from typing import Any, Optional
 
 from kivy.uix.widget import Widget  # type: ignore[import-untyped]
 
-from OrecchietTetris.view.block_renderer import BlockRenderer, BLOCK_COLOURS
+from OrecchietTetris.view.block_renderer import BlockRenderer, EMPTY_COLOUR
 from OrecchietTetris.view.widgets.cell import Cell
 
 
@@ -47,7 +47,7 @@ class PiecePreview(Widget):
         """Render *shape* centred in the preview grid. *shape=None* clears."""
         for row_cells in self._cells:
             for cell in row_cells:
-                cell.set_colour(BLOCK_COLOURS[0])
+                cell.set_colour(EMPTY_COLOUR)
 
         if shape is None:
             return
