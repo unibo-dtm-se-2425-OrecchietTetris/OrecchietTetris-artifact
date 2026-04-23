@@ -30,11 +30,11 @@ python-i18n = "^0.3.9"
 kivy = "^2.3.1"
 
 [tool.poetry.group.dev.dependencies]
-coverage = "^7.13.4"
+coverage = "^7.13.5"
 mypy = "^1.10.1"
 poethepoet = "^0.42.1"
-pytest = "^9.0.2"
-pytest-cov = "^7.0.0"
+pytest = "^9.0.3"
+pytest-cov = "^7.1.0"
 flake8 = "^7.3.0"
 pre-commit = "^4.5.1"
 
