@@ -87,16 +87,17 @@ class BoardWidget(AnchorLayout):
 
     @property
     def is_animating(self) -> bool:
+        """True while line-clear animation is running.
+
+        The setter is intentionally public: GameScreen.update() sets this True
+        synchronously on the model thread when LINES_CLEARED arrives, before
+        scheduling _dispatch via Clock — ensuring BOARD_UPDATED callbacks
+        queued ahead of LINES_CLEARED already see the flag set.
+        """
         return self._animating
 
     @is_animating.setter
     def is_animating(self, value: bool) -> None:
-        """Allow callers to set the flag synchronously before Clock callbacks fire.
-
-        GameScreen.update() sets this True on the model thread when LINES_CLEARED
-        arrives, before scheduling _dispatch — ensuring BOARD_UPDATED callbacks
-        queued ahead of LINES_CLEARED see the flag already set.
-        """
         self._animating = value
 
     @property
