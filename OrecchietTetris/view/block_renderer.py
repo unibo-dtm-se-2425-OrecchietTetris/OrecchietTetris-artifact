@@ -23,18 +23,11 @@ BLOCK_IMAGES: dict[int, str] = {
 }
 
 # Colour used to tint shadow (ghost piece) cells
-SHADOW_COLOUR: tuple[float, float, float, float] = (1.0, 1.0, 1.0, 0.25)
+SHADOW_COLOUR: tuple[float, float, float, float] = (0.28, 0.28, 0.32, 1.0)
 
 # RGBA colours used as a fallback when image files are absent
 BLOCK_COLOURS: dict[int, tuple[float, float, float, float]] = {
     0: (0.1, 0.1, 0.1, 1.0),   # empty cell
-    1: (0.0, 0.9, 0.9, 1.0),   # I – cyan
-    2: (0.9, 0.9, 0.0, 1.0),   # O – yellow
-    3: (0.6, 0.0, 0.9, 1.0),   # T – purple
-    4: (0.0, 0.9, 0.0, 1.0),   # S – green
-    5: (0.9, 0.0, 0.0, 1.0),   # Z – red
-    6: (0.0, 0.0, 0.9, 1.0),   # J – blue
-    7: (0.9, 0.45, 0.0, 1.0),  # L – orange
 }
 
 

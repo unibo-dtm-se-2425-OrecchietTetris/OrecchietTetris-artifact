@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from typing import Any, Callable, Optional
 
 from kivy.uix.screenmanager import Screen  # type: ignore[import-untyped]
@@ -23,11 +24,36 @@ from OrecchietTetris.view.widgets import Cell, PiecePreview, TitledBox, RoundedB
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
+_ASSETS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
+GAME_SCREEN_BG: str = os.path.join(_ASSETS_DIR, "game_screen.webp")
+
 BOARD_ROWS = 20
 BOARD_COLS = 10
 CELL_SIZE = 30          # pixels
 PANEL_WIDTH = 160       # right-side info panel
 BOARD_PADDING = 12      # padding + border around the board
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _cover_tex_coords(
+    img_w: float, img_h: float, win_w: float, win_h: float
+) -> tuple[float, ...]:
+    """Compute Kivy tex_coords for CSS-style cover: fill window, center, crop to fit."""
+    if img_h == 0 or win_h == 0:
+        return (0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0)
+    img_ratio = img_w / img_h
+    win_ratio = win_w / win_h
+    if img_ratio > win_ratio:
+        shown_w = win_ratio / img_ratio
+        u0 = (1.0 - shown_w) / 2.0
+        return (u0, 1.0, u0 + shown_w, 1.0, u0 + shown_w, 0.0, u0, 0.0)
+    shown_h = img_ratio / win_ratio
+    v0 = (1.0 - shown_h) / 2.0
+    v1 = v0 + shown_h
+    return (0.0, v1, 1.0, v1, 1.0, v0, 0.0, v0)
 
 
 # ---------------------------------------------------------------------------
@@ -429,8 +455,8 @@ class GameScreen(Screen, IView):
             return
         dlg = DialogOverlay(title=i18n.t("quit_confirm"))
         dlg.add_button_row([
-            {"text": i18n.t("yes"), "bg": (0.7, 0.15, 0.15, 1), "on_release": self._confirm_quit},
             {"text": i18n.t("no"),  "bg": (0.3, 0.3, 0.7, 1),  "on_release": self._dismiss_quit_overlay},
+            {"text": i18n.t("yes"), "bg": (0.7, 0.15, 0.15, 1), "on_release": self._confirm_quit},
         ])
         self.add_widget(dlg)
         self._quit_overlay = dlg
@@ -456,10 +482,26 @@ class GameScreen(Screen, IView):
     # UI construction
     # ------------------------------------------------------------------
 
+    def _load_bg_image(self) -> None:
+        """Load game_screen.webp as background texture (requires live Kivy context)."""
+        if not os.path.exists(GAME_SCREEN_BG):
+            return
+        from kivy.core.image import Image as CoreImage  # type: ignore[import-untyped]
+        self._bg_core_image = CoreImage(GAME_SCREEN_BG)
+        self._bg_image_color.a = 1
+        self._bg_rect.texture = self._bg_core_image.texture
+        self._update_bg()
+
     def _build_ui(self) -> None:
+        self._bg_core_image = None
         with self.canvas.before:
             Color(0.05, 0.05, 0.10, 1)
+            self._bg_fill_rect = Rectangle(pos=self.pos, size=self.size)
+            self._bg_image_color = Color(1, 1, 1, 0)
             self._bg_rect = Rectangle(pos=self.pos, size=self.size)
+            Color(0, 0, 0, 0.45)
+            self._bg_overlay_rect = Rectangle(pos=self.pos, size=self.size)
+        self._load_bg_image()
         self.bind(pos=self._update_bg, size=self._update_bg)
 
         cell_size = self._calc_cell_size()
@@ -702,7 +744,17 @@ class GameScreen(Screen, IView):
         self._board_container.size = (board_w + 2 * BOARD_PADDING, board_h + 2 * BOARD_PADDING)
         self._root.width = board_w + 2 * BOARD_PADDING + 2 * PANEL_WIDTH + 60
         self._root.height = board_h + 2 * BOARD_PADDING + 20
+        self._update_bg()
 
     def _update_bg(self, *_: Any) -> None:
+        self._bg_fill_rect.pos = self.pos
+        self._bg_fill_rect.size = self.size
         self._bg_rect.pos = self.pos
         self._bg_rect.size = self.size
+        self._bg_overlay_rect.pos = self.pos
+        self._bg_overlay_rect.size = self.size
+        if self._bg_core_image is not None:
+            tex = self._bg_core_image.texture
+            self._bg_rect.tex_coords = _cover_tex_coords(
+                tex.width, tex.height, self.width, self.height
+            )
