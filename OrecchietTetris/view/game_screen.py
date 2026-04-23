@@ -17,7 +17,7 @@ from OrecchietTetris.model.interfaces import ITetris
 from OrecchietTetris.view.interfaces import IView
 import i18n  # type: ignore[import-untyped]
 from OrecchietTetris.view.block_renderer import BlockRenderer, BLOCK_COLOURS
-from OrecchietTetris.view.widgets import Cell, PiecePreview, TitledBox, RoundedButton
+from OrecchietTetris.view.widgets import Cell, PiecePreview, TitledBox, RoundedButton, DialogOverlay
 
 
 # ---------------------------------------------------------------------------
@@ -69,6 +69,7 @@ class GameScreen(Screen, IView):
         self._keyboard: Any = None
         self._overlay: Optional[Widget] = None
         self._quit_overlay: Optional[Widget] = None
+        self._pause_overlay: Optional[Widget] = None
 
         self._board_cells: list[list[Cell]] = []
         self._clearing_animation: bool = False
@@ -178,8 +179,10 @@ class GameScreen(Screen, IView):
             self._show_game_over_overlay()
         elif event_type == EventType.PAUSED:
             self._btn_pause.text = ""
+            self._show_pause_overlay()
         elif event_type == EventType.RESUMED:
             self._btn_pause.text = ""
+            self._dismiss_pause_overlay()
         elif event_type == EventType.HOLD_UPDATED:
             self._update_hold_preview()
 
@@ -398,14 +401,45 @@ class GameScreen(Screen, IView):
             self._on_try_again()
 
     # ------------------------------------------------------------------
-    # Pause / quit
+    # Pause overlay
     # ------------------------------------------------------------------
 
     def _handle_pause(self, *_: Any) -> None:
         if self._model.is_paused:
+            self._dismiss_pause_overlay()
             self._show_countdown(self._model.resume)
         else:
             self._model.pause()
+
+    def _show_pause_overlay(self) -> None:
+        if self._pause_overlay is not None or self._quit_overlay is not None:
+            return
+        dlg = DialogOverlay(title=i18n.t("paused"))
+        dlg.add_button(
+            text="",
+            bg=(0.3, 0.3, 0.7, 1),
+            on_release=self._handle_pause,
+            font_name="MaterialIcons",
+            font_size="28sp",
+        )
+        dlg.add_button(
+            text="",
+            bg=(0.7, 0.15, 0.15, 1),
+            on_release=self._handle_quit,
+            font_name="MaterialIcons",
+            font_size="28sp",
+        )
+        self.add_widget(dlg)
+        self._pause_overlay = dlg
+
+    def _dismiss_pause_overlay(self, *_: Any) -> None:
+        if self._pause_overlay is not None:
+            self.remove_widget(self._pause_overlay)
+            self._pause_overlay = None
+
+    # ------------------------------------------------------------------
+    # Quit overlay
+    # ------------------------------------------------------------------
 
     def _handle_quit(self, *_: Any) -> None:
         if self._model.is_running and not self._model.is_paused:
@@ -453,13 +487,14 @@ class GameScreen(Screen, IView):
         if self._quit_overlay is not None:
             self.remove_widget(self._quit_overlay)
             self._quit_overlay = None
-        if self._model.is_paused:
+        if self._pause_overlay is None and self._model.is_paused:
             self._model.resume()
 
     def _confirm_quit(self, *_: Any) -> None:
         if self._quit_overlay is not None:
             self.remove_widget(self._quit_overlay)
             self._quit_overlay = None
+        self._dismiss_pause_overlay()
         if self._model.is_running:
             self._model.stop()
         if self._on_back_to_menu is not None:
