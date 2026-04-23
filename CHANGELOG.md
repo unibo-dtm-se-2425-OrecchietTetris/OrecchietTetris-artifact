@@ -1,3 +1,29 @@
+# [0.8.0](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.7.5...v0.8.0) (2026-04-23)
+
+
+### Bug Fixes
+
+* **game screen:** centered the elements and made the game screen responsive ([214f416](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/214f416461d61decd17dfa7939da635f4f1ae581))
+* **game screen:** split the screen in three columns to reposition the elements ([684067c](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/684067cf294e6ba93ac7f9aad6ab373d4cb7ab21))
+* replace BLOCK_COLOURS with EMPTY_COLOUR, update tests ([ebab99f](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/ebab99fe960465b7ddf22a3b0bea0beee6f1adf3))
+* reset stats and pieces in a game ([4e7d87c](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/4e7d87c2767d0992d71f6f60c575f73e163a5443))
+* **tetris:** enable wall-kick ([e2835a5](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/e2835a582ff07e3c1ee3e136bb10bbca285ffba9))
+* **ui:** add background to game screen ([5ebbc5d](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/5ebbc5dc7affb67884462194fbe4aef214f8a803))
+* **ui:** add board container, fix hold preview ([4cf53ca](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/4cf53ca0b9052c5005b92ebdde2ef4f5d21bf9c4))
+* **ui:** fill board background ([3bd8799](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/3bd879917ded90c0147661fefd5d7174eb1ab605))
+* **ui:** refactor game over dialog overlay ([de3eb66](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/de3eb6690f77e8f6fa14a21ec7309ea354848532))
+* **ui:** refactor pause dialog overlay ([055af22](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/055af22db6e4664c0f6a07433775f59c4cac8562))
+* **ui:** refactor quit dialog overlay ([29dd882](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/29dd8829c1d06bf9bece7ae67878c3408bccfe77))
+* **view:** fix border radius inconsistency and document is_animating setter ([9a95510](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/9a955109af70a15745da35ae3ed0a9b37074b17a))
+* **view:** restore white flash color and improve is_animating docstring ([3930b02](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/3930b024daab0d1eb616b4223e55baa8bf2052fd))
+
+
+### Features
+
+* **ui:** add icons in tetrominoes squares ([2859e97](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/2859e97edff61b95d5df728e53dbb991c3549c01))
+* **view:** add BoardWidget with rendering and animation logic ([89532cb](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/89532cb39005c04090953885a7ed014146d364ad))
+* **view:** export BoardWidget from widgets package ([a5d1b13](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/a5d1b1342903c2b21aa5974656fe2a4486ffe505))
+
 ## [0.7.5](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.7.4...v0.7.5) (2026-03-28)
 
 
