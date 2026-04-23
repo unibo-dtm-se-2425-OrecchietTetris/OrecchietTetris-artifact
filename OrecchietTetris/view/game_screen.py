@@ -8,6 +8,7 @@ from kivy.uix.boxlayout import BoxLayout  # type: ignore[import-untyped]
 from kivy.uix.anchorlayout import AnchorLayout  # type: ignore[import-untyped]
 from kivy.uix.label import Label  # type: ignore[import-untyped]
 from kivy.uix.widget import Widget  # type: ignore[import-untyped]
+from kivy.uix.textinput import TextInput  # type: ignore[import-untyped]
 from kivy.graphics import Color, Rectangle, RoundedRectangle  # type: ignore[import-untyped]
 from kivy.clock import Clock  # type: ignore[import-untyped]
 from kivy.core.window import Window  # type: ignore[import-untyped]
@@ -15,6 +16,8 @@ from kivy.core.window import Window  # type: ignore[import-untyped]
 from OrecchietTetris.utils import EventType
 from OrecchietTetris.model.interfaces import ITetris
 from OrecchietTetris.view.interfaces import IView
+from OrecchietTetris.leaderboard.interfaces import ILeaderboardRepository
+from OrecchietTetris.leaderboard.leaderboard_entry import LeaderboardEntry
 import i18n  # type: ignore[import-untyped]
 from OrecchietTetris.view.block_renderer import BlockRenderer, EMPTY_COLOUR
 from OrecchietTetris.view.widgets import (
@@ -83,11 +86,13 @@ class GameScreen(Screen, IView):
     def __init__(
         self,
         model: ITetris,
+        repository: Optional[ILeaderboardRepository] = None,
         on_back_to_menu: Optional[Callable[[], None]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self._model = model
+        self._repo = repository
         self._on_back_to_menu = on_back_to_menu
         self._renderer = BlockRenderer()
         self._renderer.preload_textures()
@@ -225,10 +230,10 @@ class GameScreen(Screen, IView):
         elif event_type == EventType.GAME_OVER:
             self._show_game_over_overlay()
         elif event_type == EventType.PAUSED:
-            self._btn_pause.text = ""
+            self._btn_pause.text = "\ue037"
             self._show_pause_overlay()
         elif event_type == EventType.RESUMED:
-            self._btn_pause.text = ""
+            self._btn_pause.text = "\ue034"
             self._dismiss_pause_overlay()
         elif event_type == EventType.HOLD_UPDATED:
             self._update_hold_preview()
@@ -294,14 +299,64 @@ class GameScreen(Screen, IView):
     def _show_game_over_overlay(self) -> None:
         if self._overlay is not None:
             return
+        if self._repo is not None:
+            self._show_name_input_overlay()
+        else:
+            self._show_result_overlay()
+
+    def _show_name_input_overlay(self) -> None:
         dlg = DialogOverlay(
             title=i18n.t("game_over"),
-            title_color=(0.9, 0.2, 0.2, 1),
+            title_color=(1, 1, 1, 1),
         )
-        dlg.add_label(
-            f"{i18n.t('score')}: {self._model.score}",
+        dlg.add_label(Label(
+            text=f"{i18n.t('score')}: {self._model.score}  "
+                 f"{i18n.t('level')}: {self._model.level}  "
+                 f"{i18n.t('lines')}: {self._model.lines_cleared}",
             font_size="24sp",
+            color=(1, 1, 1, 1),
+        ))
+        dlg.add_label(Label(
+            text=i18n.t("enter_name"),
+            font_size="18sp",
+            color=(0.8, 0.8, 0.8, 1),
+            size_hint=(1, None),
+            height=30,
+        ))
+        name_input = TextInput(
+            multiline=False,
+            font_size="20sp",
+            size_hint=(0.7, None),
+            height=44,
+            pos_hint={"center_x": 0.5},
+            background_color=(0.15, 0.15, 0.22, 1),
+            foreground_color=(1, 1, 1, 1),
+            cursor_color=(0.9, 0.5, 0.1, 1),
         )
+        dlg.add_label(name_input)
+
+        def _on_save(*_: Any) -> None:
+            name = name_input.text.strip() or "?"
+            assert self._repo is not None
+            self._repo.save(LeaderboardEntry(
+                name=name,
+                score=self._model.score,
+                level=self._model.level,
+                lines=self._model.lines_cleared,
+            ))
+            if self._overlay is not None:
+                self.remove_widget(self._overlay)
+                self._overlay = None
+            self._show_result_overlay()
+
+        name_input.bind(on_text_validate=_on_save)
+        dlg.add_button(
+            text=f"[font=MaterialIcons]\ue161[/font]  {i18n.t('save')}",
+            bg=(0.2, 0.6, 0.2, 1),
+            on_release=_on_save,
+            font_size="22sp",
+        )
+
         dlg.add_button(
             text="",
             bg=(0.3, 0.3, 0.7, 1),
