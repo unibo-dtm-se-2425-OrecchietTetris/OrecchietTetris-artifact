@@ -1,3 +1,29 @@
+# [0.9.0](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.8.0...v0.9.0) (2026-04-24)
+
+
+### Bug Fixes
+
+* **Audio Controller:** discover all songs in the path, play the queue in loop ([c374515](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/c374515dab8b203c10feb9f1e10216ae8a838266))
+* **Audio Controller:** make silent_controller tests correct ([1b0ea3b](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/1b0ea3b0f4568c3aa3514f9e8518e831023526b2))
+* remove pause overlay, improve code and perf ([4ed253d](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/4ed253d6b40a407c3096ad45baf9b9286317036b))
+
+
+### Features
+
+* **audio:** add IAudioController interface and KivyAudioController singleton ([0b02791](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/0b02791208aa4cebec6eedfb351cfbe4339ae18a))
+* **leaderboard:** add CsvLeaderboardRepository singleton ([a4b0498](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/a4b0498bf9767f86bfdb9aa01e56974256c75ac2))
+* **leaderboard:** add LeaderboardEntry dataclass and ILeaderboardRepository interface ([5c006d2](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/5c006d296118894879fe9f0f98383b111306caed))
+* **view:** add leaderboard button to menu and wire navigation in app ([99cfdd1](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/99cfdd1d0e77ba5fbb4ff26d7bf25bb03e5b56f1))
+* **view:** add LeaderboardScreen and i18n keys ([0aa61e9](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/0aa61e9da12c7606dfecf5adfd2b99d41931be14))
+* **view:** add music toggle button and 'm' shortcut to game screen ([b2f4323](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/b2f432344947ba1ca0f87de35e66415ec82017c8))
+* **view:** add volume slider to menu ([df22674](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/df226749259ac2f73ffd6474485b328816d21586))
+* **view:** show name input on game over and save to leaderboard ([cfa3428](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/cfa3428730f9956da121eeb31ebf0ad6faa44886))
+
+
+### Performance Improvements
+
+* move assets and locales in root folder, define absolute local path ([6e8647a](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/6e8647af074f6ae6d702d405a5ea48313f4c27ca))
+
 # [0.8.0](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.7.5...v0.8.0) (2026-04-23)
 
 
