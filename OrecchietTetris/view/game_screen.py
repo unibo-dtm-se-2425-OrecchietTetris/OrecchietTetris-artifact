@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from typing import Any, Callable, Optional
 
 from kivy.uix.screenmanager import Screen  # type: ignore[import-untyped]
@@ -8,13 +7,18 @@ from kivy.uix.boxlayout import BoxLayout  # type: ignore[import-untyped]
 from kivy.uix.anchorlayout import AnchorLayout  # type: ignore[import-untyped]
 from kivy.uix.label import Label  # type: ignore[import-untyped]
 from kivy.uix.widget import Widget  # type: ignore[import-untyped]
+from kivy.uix.textinput import TextInput  # type: ignore[import-untyped]
 from kivy.graphics import Color, Rectangle, RoundedRectangle  # type: ignore[import-untyped]
 from kivy.clock import Clock  # type: ignore[import-untyped]
 from kivy.core.window import Window  # type: ignore[import-untyped]
 
 from OrecchietTetris.utils import EventType
+from OrecchietTetris.utils.paths import ASSETS_DIR
 from OrecchietTetris.model.interfaces import ITetris
 from OrecchietTetris.view.interfaces import IView
+from OrecchietTetris.audio.interfaces import IAudioController
+from OrecchietTetris.leaderboard.interfaces import ILeaderboardRepository
+from OrecchietTetris.leaderboard.leaderboard_entry import LeaderboardEntry
 import i18n  # type: ignore[import-untyped]
 from OrecchietTetris.view.block_renderer import BlockRenderer, EMPTY_COLOUR
 from OrecchietTetris.view.widgets import (
@@ -26,8 +30,7 @@ from OrecchietTetris.view.widgets.board_widget import BOARD_ROWS, BOARD_COLS, BO
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-_ASSETS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
-GAME_SCREEN_BG: str = os.path.join(_ASSETS_DIR, "game_screen.webp")
+GAME_SCREEN_BG: str = str(ASSETS_DIR / "game_screen.webp")
 
 CELL_SIZE = 30          # pixels
 PANEL_WIDTH = 160       # right-side info panel
@@ -83,22 +86,25 @@ class GameScreen(Screen, IView):
     def __init__(
         self,
         model: ITetris,
+        repository: Optional[ILeaderboardRepository] = None,
+        audio: Optional[IAudioController] = None,
         on_back_to_menu: Optional[Callable[[], None]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self._model = model
+        self._audio = audio
+        self._repo = repository
         self._on_back_to_menu = on_back_to_menu
         self._renderer = BlockRenderer()
         self._renderer.preload_textures()
         self._keyboard: Any = None
         self._overlay: Optional[Widget] = None
         self._quit_overlay: Optional[Widget] = None
-        self._pause_overlay: Optional[Widget] = None
 
         self._board: BoardWidget
         self._countdown_overlay: Optional[Widget] = None
-        self._on_try_again = self.start_with_countdown
+        self._on_try_again = self._restart
         self._root: BoxLayout
         self._hold_box: TitledBox
         self._next_box: TitledBox
@@ -126,13 +132,14 @@ class GameScreen(Screen, IView):
 
     def start_with_countdown(self) -> None:
         """Show a 3-2-1 countdown overlay then start a new game."""
-        def _countdown_callback() -> None:
-            self._model.play()
-            self._update_hold_preview()
-            self._lbl_score.text = str(self._model.score)
-            self._lbl_level.text = str(self._model.level)
-            self._lbl_lines.text = str(self._model.lines_cleared)
-        self._show_countdown(_countdown_callback)
+        self._show_countdown(self.restart)
+
+    def _restart(self) -> None:
+        self._model.play()
+        self._update_hold_preview()
+        self._lbl_score.text = str(self._model.score)
+        self._lbl_level.text = str(self._model.level)
+        self._lbl_lines.text = str(self._model.lines_cleared)
 
     # ------------------------------------------------------------------
     # Countdown overlay
@@ -225,11 +232,9 @@ class GameScreen(Screen, IView):
         elif event_type == EventType.GAME_OVER:
             self._show_game_over_overlay()
         elif event_type == EventType.PAUSED:
-            self._btn_pause.text = ""
-            self._show_pause_overlay()
+            self._btn_pause.text = "\ue037"
         elif event_type == EventType.RESUMED:
-            self._btn_pause.text = ""
-            self._dismiss_pause_overlay()
+            self._btn_pause.text = "\ue034"
         elif event_type == EventType.HOLD_UPDATED:
             self._update_hold_preview()
 
@@ -280,6 +285,8 @@ class GameScreen(Screen, IView):
             self._model.hold()
         elif key in ("p", "escape"):
             self._handle_pause()
+        elif key == "m":
+            self._toggle_music()
         elif key in ("q"):
             if self._quit_overlay is None:
                 self._handle_quit()
@@ -291,17 +298,22 @@ class GameScreen(Screen, IView):
     # Game-over overlay
     # ------------------------------------------------------------------
 
-    def _show_game_over_overlay(self) -> None:
+    def _show_game_over_overlay(self, name_input: bool = True) -> None:
         if self._overlay is not None:
             return
         dlg = DialogOverlay(
             title=i18n.t("game_over"),
-            title_color=(0.9, 0.2, 0.2, 1),
+            title_color=(1, 1, 1, 1),
         )
         dlg.add_label(
-            f"{i18n.t('score')}: {self._model.score}",
+            text=f"{i18n.t('score')}: {self._model.score}  ",
             font_size="24sp",
+            color=(1, 1, 1, 1),
         )
+
+        if name_input and self._repo is not None:
+            self._add_name_input_in_game_over(dlg)
+
         dlg.add_button(
             text="",
             bg=(0.3, 0.3, 0.7, 1),
@@ -318,6 +330,49 @@ class GameScreen(Screen, IView):
         )
         self.add_widget(dlg)
         self._overlay = dlg
+
+    def _add_name_input_in_game_over(self, dlg: DialogOverlay) -> None:
+        dlg.add_label(
+            text=i18n.t("enter_name"),
+            font_size="18sp",
+            color=(0.8, 0.8, 0.8, 1),
+        )
+        name_input = TextInput(
+            multiline=False,
+            font_size="20sp",
+            size_hint=(0.7, None),
+            height=60,
+            pos_hint={"center_x": 0.5},
+            background_color=(0.15, 0.15, 0.22, 1),
+            foreground_color=(1, 1, 1, 1),
+            cursor_color=(0.9, 0.5, 0.1, 1),
+        )
+        dlg.add_generic_widget(
+            widget=name_input,
+            height=44
+        )
+
+        def _on_save(*_: Any) -> None:
+            name = name_input.text.strip() or "?"
+            assert self._repo is not None
+            self._repo.save(LeaderboardEntry(
+                name=name,
+                score=self._model.score,
+                level=self._model.level,
+                lines=self._model.lines_cleared,
+            ))
+            if self._overlay is not None:
+                self.remove_widget(self._overlay)
+                self._overlay = None
+            self._show_game_over_overlay(False)
+
+        name_input.bind(on_text_validate=_on_save)
+        dlg.add_button(
+            text=f"[font=MaterialIcons]\ue161[/font]  {i18n.t('save')}",
+            bg=(0.2, 0.6, 0.2, 1),
+            on_release=_on_save,
+            font_size="22sp",
+        )
 
     def _handle_back_to_menu(self, *_: Any) -> None:
         if self._overlay is not None:
@@ -339,36 +394,14 @@ class GameScreen(Screen, IView):
 
     def _handle_pause(self, *_: Any) -> None:
         if self._model.is_paused:
-            self._dismiss_pause_overlay()
             self._show_countdown(self._model.resume)
         else:
             self._model.pause()
 
-    def _show_pause_overlay(self) -> None:
-        if self._pause_overlay is not None or self._quit_overlay is not None:
-            return
-        dlg = DialogOverlay(title=i18n.t("paused"))
-        dlg.add_button(
-            text="",
-            bg=(0.3, 0.3, 0.7, 1),
-            on_release=self._handle_pause,
-            font_name="MaterialIcons",
-            font_size="28sp",
-        )
-        dlg.add_button(
-            text="",
-            bg=(0.7, 0.15, 0.15, 1),
-            on_release=self._handle_quit,
-            font_name="MaterialIcons",
-            font_size="28sp",
-        )
-        self.add_widget(dlg)
-        self._pause_overlay = dlg
-
-    def _dismiss_pause_overlay(self, *_: Any) -> None:
-        if self._pause_overlay is not None:
-            self.remove_widget(self._pause_overlay)
-            self._pause_overlay = None
+    def _toggle_music(self, *_: Any) -> None:
+        if self._audio is not None:
+            self._audio.toggle()
+            self._btn_music.text = "\ue04f" if not self._audio.is_playing else "\ue050"
 
     # ------------------------------------------------------------------
     # Quit overlay
@@ -396,14 +429,13 @@ class GameScreen(Screen, IView):
         if self._quit_overlay is not None:
             self.remove_widget(self._quit_overlay)
             self._quit_overlay = None
-        if self._pause_overlay is None and self._model.is_paused:
+        if self._model.is_paused:
             self._model.resume()
 
     def _confirm_quit(self, *_: Any) -> None:
         if self._quit_overlay is not None:
             self.remove_widget(self._quit_overlay)
             self._quit_overlay = None
-        self._dismiss_pause_overlay()
         if self._model.is_running:
             self._model.stop()
         if self._on_back_to_menu is not None:
@@ -415,7 +447,8 @@ class GameScreen(Screen, IView):
 
     def _load_bg_image(self) -> None:
         """Load game_screen.webp as background texture (requires live Kivy context)."""
-        if not os.path.exists(GAME_SCREEN_BG):
+        from pathlib import Path
+        if not Path(GAME_SCREEN_BG).exists():
             return
         from kivy.core.image import Image as CoreImage  # type: ignore[import-untyped]
         self._bg_core_image = CoreImage(GAME_SCREEN_BG)
@@ -581,7 +614,21 @@ class GameScreen(Screen, IView):
         self._next_box.set_content(self._next_preview)
         right_panel.add_widget(self._next_box)
 
-        right_panel.add_widget(Widget())  # flexible spacer
+        right_panel.add_widget(Widget())
+
+        # Music toggle button
+        if self._audio:
+            music_icon = "\ue050" if self._audio.is_playing else "\ue04f"
+            self._btn_music = RoundedButton(
+                text=music_icon,
+                font_name="MaterialIcons",
+                font_size="24sp",
+                size_hint=(1, None),
+                height=60,
+                background_color=(0.2, 0.45, 0.2, 1),
+            )
+            self._btn_music.bind(on_release=self._toggle_music)
+            right_panel.add_widget(self._btn_music)
 
         # Pause button
         self._btn_pause = RoundedButton(

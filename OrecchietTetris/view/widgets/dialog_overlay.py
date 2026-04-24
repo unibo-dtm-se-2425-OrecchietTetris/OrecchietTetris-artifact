@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Callable, Optional
 
+from kivy.uix.widget import Widget  # type: ignore[import-untyped]
 from kivy.uix.floatlayout import FloatLayout  # type: ignore[import-untyped]
 from kivy.uix.boxlayout import BoxLayout  # type: ignore[import-untyped]
 from kivy.uix.label import Label  # type: ignore[import-untyped]
@@ -110,6 +111,10 @@ class DialogOverlay(FloatLayout):
         self._grow_card(_LABEL_H)
         return lbl
 
+    def add_generic_widget(self, widget: Widget, height: int) -> None:
+        self._card.add_widget(widget)
+        self._grow_card(height)
+
     def add_button(
         self,
         text: str,
@@ -120,6 +125,7 @@ class DialogOverlay(FloatLayout):
     ) -> RoundedButton:
         kwargs: dict[str, Any] = dict(
             text=text,
+            markup=True,
             font_size=font_size,
             size_hint=(0.85, None),
             height=_BUTTON_H,
