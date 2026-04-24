@@ -50,9 +50,11 @@ def reset_singleton() -> Any:
 
 
 @pytest.fixture
-def silent_controller() -> KivyAudioController:
-    """Controller with no audio file — all sound operations are no-ops."""
-    return KivyAudioController()
+def silent_controller(tmp_path: Path) -> KivyAudioController:
+    """Controller pointing at an empty dir — all sound operations are no-ops."""
+    empty = tmp_path / "empty"
+    empty.mkdir()
+    return KivyAudioController(music_path=empty)
 
 
 @pytest.fixture
