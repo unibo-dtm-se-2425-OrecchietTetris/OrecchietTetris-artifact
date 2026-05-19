@@ -1,3 +1,10 @@
+## [0.9.3](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.9.2...v0.9.3) (2026-05-19)
+
+
+### Bug Fixes
+
+* **settings:** toggle music from settings ([f6490ce](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/f6490ce7f296af7f7b31169f1b99a66f1e539547))
+
 ## [0.9.2](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.9.1...v0.9.2) (2026-05-19)
 
 
