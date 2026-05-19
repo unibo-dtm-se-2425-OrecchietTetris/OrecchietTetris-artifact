@@ -176,6 +176,27 @@ class DialogOverlay(FloatLayout):
     # Internal helpers
     # ------------------------------------------------------------------
 
+    # ------------------------------------------------------------------
+    # Touch blocking — consume all events so widgets behind the overlay
+    # are unreachable while the dialog is on screen.
+    # ------------------------------------------------------------------
+
+    def on_touch_down(self, touch: Any) -> bool:
+        super().on_touch_down(touch)
+        return True
+
+    def on_touch_move(self, touch: Any) -> bool:
+        super().on_touch_move(touch)
+        return True
+
+    def on_touch_up(self, touch: Any) -> bool:
+        super().on_touch_up(touch)
+        return True
+
+    # ------------------------------------------------------------------
+    # Internal helpers
+    # ------------------------------------------------------------------
+
     def _grow_card(self, added_h: float) -> None:
         n = len(self._card.children)
         extra_spacing = _CARD_SPACING if n > 1 else 0
