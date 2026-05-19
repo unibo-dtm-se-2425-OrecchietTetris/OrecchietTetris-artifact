@@ -121,6 +121,9 @@ class GameScreen(Screen, IView):
         self.opacity = 1.0
         self.disabled = False
         self._refresh_labels()
+        self._lbl_score.text = "0"
+        self._lbl_level.text = "1"
+        self._lbl_lines.text = "0"
         self._model.attach(self)
         self._bind_keyboard()
 
