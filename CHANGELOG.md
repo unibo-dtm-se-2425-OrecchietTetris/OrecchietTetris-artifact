@@ -1,3 +1,11 @@
+## [0.9.2](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.9.1...v0.9.2) (2026-05-19)
+
+
+### Bug Fixes
+
+* **dialog:** disable screen behind overlay ([d16835b](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/d16835b8eda11a1fda628b150466cbfacbd30f3c))
+* **menu_screen:** buttons repositioning and settings dialog creation ([1ae1d1e](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/1ae1d1e2e83aa3c5c692c2e35df21950f1876460))
+
 ## [0.9.1](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.9.0...v0.9.1) (2026-05-19)
 
 
