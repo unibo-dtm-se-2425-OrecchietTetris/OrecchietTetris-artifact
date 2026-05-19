@@ -5,7 +5,6 @@ from typing import Any, Callable, Optional
 import i18n  # type: ignore[import-untyped]
 from kivy.uix.screenmanager import Screen  # type: ignore[import-untyped]
 from kivy.uix.boxlayout import BoxLayout  # type: ignore[import-untyped]
-from kivy.uix.label import Label  # type: ignore[import-untyped]
 from kivy.uix.image import Image  # type: ignore[import-untyped]
 from kivy.uix.slider import Slider  # type: ignore[import-untyped]
 from kivy.graphics import Color, Rectangle  # type: ignore[import-untyped]
@@ -24,6 +23,7 @@ _IC_STAR = ""      # leaderboard
 _IC_GEAR = ""      # settings
 _IC_QUIT = ""      # exit
 _IC_VOL = ""       # volume_up
+_IC_MUTE = ""    # volume_off
 
 
 class MenuScreen(Screen, IView):
@@ -49,6 +49,9 @@ class MenuScreen(Screen, IView):
         self._on_leaderboard = on_leaderboard
         self._audio = audio
         self._settings_overlay: Optional[DialogOverlay] = None
+        self._btn_volume: Optional[RoundedButton] = None
+        self._slider_volume: Optional[Slider] = None
+        self._pre_mute_volume: float = 0.5
         self._build_ui()
 
     # ------------------------------------------------------------------
@@ -190,14 +193,19 @@ class MenuScreen(Screen, IView):
                 pos_hint={"center_x": 0.5},
                 spacing=10,
             )
-            self._lbl_volume = Label(
-                text=f"[font=MaterialIcons]{_IC_VOL}[/font]",
-                markup=True,
+            init_icon = _IC_MUTE if self._audio.volume == 0.0 else _IC_VOL
+            self._btn_volume = RoundedButton(
+                text=init_icon,
+                font_name="MaterialIcons",
                 font_size="22sp",
                 color=(0.8, 0.8, 0.8, 1),
                 size_hint=(0.15, 1),
+                background_normal="",
+                background_down="",
+                background_color=(0, 0, 0, 0),
             )
-            vol_row.add_widget(self._lbl_volume)
+            self._btn_volume.bind(on_release=self._toggle_mute)
+            vol_row.add_widget(self._btn_volume)
             self._slider_volume = Slider(
                 min=0.0,
                 max=1.0,
@@ -228,6 +236,17 @@ class MenuScreen(Screen, IView):
     def _on_volume_change(self, _slider: Any, value: float) -> None:
         if self._audio is not None:
             self._audio.set_volume(value)
+        if self._btn_volume is not None:
+            self._btn_volume.text = _IC_MUTE if value == 0.0 else _IC_VOL
+
+    def _toggle_mute(self, *_args: Any) -> None:
+        if self._audio is None or self._slider_volume is None:
+            return
+        if self._audio.volume > 0.0:
+            self._pre_mute_volume = self._audio.volume
+            self._slider_volume.value = 0.0
+        else:
+            self._slider_volume.value = self._pre_mute_volume if self._pre_mute_volume > 0.0 else 0.5
 
     def _handle_quit(self, *_args: Any) -> None:
         App.get_running_app().stop()
