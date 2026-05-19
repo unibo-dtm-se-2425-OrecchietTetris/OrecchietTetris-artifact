@@ -14,7 +14,16 @@ from kivy.app import App  # type: ignore[import-untyped]
 from OrecchietTetris.utils import EventType
 from OrecchietTetris.view.interfaces import IView
 from OrecchietTetris.audio.interfaces import IAudioController
-from OrecchietTetris.view.widgets import RoundedButton, RoundedToggleButton
+from OrecchietTetris.view.widgets import RoundedButton, RoundedToggleButton, DialogOverlay
+
+_BUTTON_H = 52   # matches DialogOverlay._BUTTON_H
+_ICON_BTN_SIZE = 56  # transparent corner icon buttons
+
+_IC_PLAY = ""
+_IC_STAR = ""      # leaderboard
+_IC_GEAR = ""      # settings
+_IC_QUIT = ""      # exit
+_IC_VOL  = ""      # volume_up
 
 
 class MenuScreen(Screen, IView):
@@ -39,6 +48,7 @@ class MenuScreen(Screen, IView):
         self._on_new_game = on_new_game
         self._on_leaderboard = on_leaderboard
         self._audio = audio
+        self._settings_overlay: Optional[DialogOverlay] = None
         self._build_ui()
 
     # ------------------------------------------------------------------
@@ -79,104 +89,141 @@ class MenuScreen(Screen, IView):
         root.add_widget(title)
 
         self._btn_new_game = RoundedButton(
-            text=f"[font=MaterialIcons]\ue037[/font]  {i18n.t('new_game')}",
+            text=f"[font=MaterialIcons]{_IC_PLAY}[/font]  {i18n.t('new_game')}",
             markup=True,
-            font_size="28sp",
-            size_hint=(0.5, 0.15),
+            font_size="20sp",
+            size_hint=(0.5, 0.09),
             pos_hint={"center_x": 0.5},
             background_color=(0.9, 0.5, 0.1, 1),
         )
         self._btn_new_game.bind(on_release=self._handle_new_game)
         root.add_widget(self._btn_new_game)
 
-        # Leaderboard button
         self._btn_leaderboard = RoundedButton(
-            text=f"[font=MaterialIcons]\ue8b6[/font]  {i18n.t('leaderboard')}",
+            text=f"[font=MaterialIcons]{_IC_STAR}[/font]  {i18n.t('leaderboard')}",
             markup=True,
-            font_size="22sp",
-            size_hint=(0.5, 0.12),
+            font_size="20sp",
+            size_hint=(0.5, 0.09),
             pos_hint={"center_x": 0.5},
             background_color=(0.2, 0.5, 0.8, 1),
         )
         self._btn_leaderboard.bind(on_release=self._handle_leaderboard)
         root.add_widget(self._btn_leaderboard)
 
-        # Volume row (only when an audio controller is provided)
-        if self._audio is not None:
-            vol_row = BoxLayout(
-                orientation="horizontal",
-                size_hint=(0.6, None),
-                height=40,
-                pos_hint={"center_x": 0.5},
-                spacing=10,
-            )
-            self._lbl_volume = Label(
-                text=f"[font=MaterialIcons]\ue050[/font]  {i18n.t('volume')}",
-                markup=True,
-                font_size="18sp",
-                color=(0.8, 0.8, 0.8, 1),
-                size_hint=(0.4, 1),
-            )
-            vol_row.add_widget(self._lbl_volume)
-            self._slider_volume = Slider(
-                min=0.0,
-                max=1.0,
-                value=self._audio.volume,
-                size_hint=(0.6, 1),
-                cursor_size=(20, 20),
-            )
-            self._slider_volume.bind(value=self._on_volume_change)
-            vol_row.add_widget(self._slider_volume)
-            root.add_widget(vol_row)
+        self.add_widget(root)
 
-        # Language row
-        lang_row = BoxLayout(orientation="horizontal", size_hint=(0.5, 0.1),
-                             pos_hint={"center_x": 0.5}, spacing=10)
-
-        lang_label = Label(
-            text=i18n.t("language") + ":",
-            font_size="20sp",
-            color=(0.8, 0.8, 0.8, 1),
-            size_hint=(0.4, 1),
+        # Settings gear — top-right corner, transparent
+        self._btn_settings = RoundedButton(
+            text=_IC_GEAR,
+            font_name="MaterialIcons",
+            font_size="40sp",
+            size_hint=(None, None),
+            size=(_ICON_BTN_SIZE, _ICON_BTN_SIZE),
+            pos_hint={"right": 0.98, "top": 0.98},
+            background_normal="",
+            background_down="",
+            background_color=(0, 0, 0, 0),
+            color=(0.75, 0.75, 0.75, 1),
         )
-        self._lang_label = lang_label
-        lang_row.add_widget(lang_label)
+        self._btn_settings.bind(on_release=self._open_settings)
+        self.add_widget(self._btn_settings)
 
+        # Quit — bottom-left corner, transparent
+        self._btn_quit = RoundedButton(
+            text=_IC_QUIT,
+            font_name="MaterialIcons",
+            font_size="40sp",
+            size_hint=(None, None),
+            size=(_ICON_BTN_SIZE, _ICON_BTN_SIZE),
+            pos_hint={"x": 0.02, "y": 0.02},
+            background_normal="",
+            background_down="",
+            background_color=(0, 0, 0, 0),
+            color=(0.75, 0.2, 0.2, 1),
+        )
+        self._btn_quit.bind(on_release=self._handle_quit)
+        self.add_widget(self._btn_quit)
+
+        self._build_settings_overlay()
+
+    def _build_settings_overlay(self) -> None:
+        dlg = DialogOverlay(title=i18n.t("settings"))
+
+        self._lang_label = dlg.add_label(
+            i18n.t("language") + ":",
+            font_size="18sp",
+            color=(0.8, 0.8, 0.8, 1),
+        )
+
+        lang_btn_row = BoxLayout(
+            orientation="horizontal",
+            size_hint=(0.85, None),
+            height=_BUTTON_H,
+            pos_hint={"center_x": 0.5},
+            spacing=12,
+        )
         self._btn_en = RoundedToggleButton(
             text="EN",
             group="language",
             state="down" if str(i18n.get('locale')) == "en" else "normal",
-            font_size="18sp",
-            size_hint=(0.3, 1),
+            font_size="16sp",
             background_color=(0.2, 0.5, 0.8, 1),
         )
         self._btn_it = RoundedToggleButton(
             text="IT",
             group="language",
             state="down" if str(i18n.get('locale')) == "it" else "normal",
-            font_size="18sp",
-            size_hint=(0.3, 1),
+            font_size="16sp",
             background_color=(0.2, 0.5, 0.8, 1),
         )
         self._btn_en.bind(on_release=lambda _: self._set_language("en"))
         self._btn_it.bind(on_release=lambda _: self._set_language("it"))
-        lang_row.add_widget(self._btn_en)
-        lang_row.add_widget(self._btn_it)
-        root.add_widget(lang_row)
+        lang_btn_row.add_widget(self._btn_en)
+        lang_btn_row.add_widget(self._btn_it)
+        dlg.add_generic_widget(lang_btn_row, height=_BUTTON_H)
 
-        self._btn_quit = RoundedButton(
-            text="\ue9ba",
-            font_name="MaterialIcons",
-            font_size="28sp",
-            size_hint=(0.5, 0.12),
-            pos_hint={"center_x": 0.5},
-            background_color=(0.7, 0.15, 0.15, 1),
-            color=(1, 1, 1, 1),
+        if self._audio is not None:
+            vol_row = BoxLayout(
+                orientation="horizontal",
+                size_hint=(0.85, None),
+                height=_BUTTON_H,
+                pos_hint={"center_x": 0.5},
+                spacing=10,
+            )
+            self._lbl_volume = Label(
+                text=f"[font=MaterialIcons]{_IC_VOL}[/font]",
+                markup=True,
+                font_size="22sp",
+                color=(0.8, 0.8, 0.8, 1),
+                size_hint=(0.15, 1),
+            )
+            vol_row.add_widget(self._lbl_volume)
+            self._slider_volume = Slider(
+                min=0.0,
+                max=1.0,
+                value=self._audio.volume,
+                size_hint=(0.85, 1),
+                cursor_size=(20, 20),
+            )
+            self._slider_volume.bind(value=self._on_volume_change)
+            vol_row.add_widget(self._slider_volume)
+            dlg.add_generic_widget(vol_row, height=_BUTTON_H)
+
+        dlg.add_button(
+            text="Close",
+            bg=(0.4, 0.4, 0.4, 1),
+            on_release=self._close_settings,
         )
-        self._btn_quit.bind(on_release=self._handle_quit)
-        root.add_widget(self._btn_quit)
 
-        self.add_widget(root)
+        self._settings_overlay = dlg
+
+    def _open_settings(self, *_args: Any) -> None:
+        if self._settings_overlay is not None:
+            self.add_widget(self._settings_overlay)
+
+    def _close_settings(self, *_args: Any) -> None:
+        if self._settings_overlay is not None:
+            self.remove_widget(self._settings_overlay)
 
     def _on_volume_change(self, _slider: Any, value: float) -> None:
         if self._audio is not None:
@@ -202,8 +249,6 @@ class MenuScreen(Screen, IView):
         self._refresh_labels()
 
     def _refresh_labels(self) -> None:
-        self._btn_new_game.text = f"[font=MaterialIcons]\ue037[/font]  {i18n.t('new_game')}"
-        self._btn_leaderboard.text = f"[font=MaterialIcons]\ue8b6[/font]  {i18n.t('leaderboard')}"
+        self._btn_new_game.text = f"[font=MaterialIcons]{_IC_PLAY}[/font]  {i18n.t('new_game')}"
+        self._btn_leaderboard.text = f"[font=MaterialIcons]{_IC_STAR}[/font]  {i18n.t('leaderboard')}"
         self._lang_label.text = i18n.t("language") + ":"
-        if self._audio is not None:
-            self._lbl_volume.text = f"[font=MaterialIcons]\ue050[/font]  {i18n.t('volume')}"
