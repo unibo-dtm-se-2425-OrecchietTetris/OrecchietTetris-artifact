@@ -6,6 +6,7 @@ import i18n  # type: ignore[import-untyped]
 from kivy.uix.screenmanager import Screen  # type: ignore[import-untyped]
 from kivy.uix.boxlayout import BoxLayout  # type: ignore[import-untyped]
 from kivy.uix.label import Label  # type: ignore[import-untyped]
+from kivy.uix.image import Image  # type: ignore[import-untyped]
 from kivy.uix.slider import Slider  # type: ignore[import-untyped]
 from kivy.graphics import Color, Rectangle  # type: ignore[import-untyped]
 from kivy.app import App  # type: ignore[import-untyped]
@@ -66,14 +67,14 @@ class MenuScreen(Screen, IView):
 
         self.bind(pos=self._update_bg, size=self._update_bg)
 
-        root = BoxLayout(orientation="vertical", padding=40, spacing=20)
+        # Main vertical content: logo + play + leaderboard
+        root = BoxLayout(orientation="vertical", padding=40, spacing=14)
 
-        title = Label(
-            text="OrecchietTetris",
-            font_size="48sp",
-            bold=True,
-            color=(0.9, 0.5, 0.1, 1),
-            size_hint=(1, 0.3),
+        title = Image(
+            source="assets/menu_screen_logo.png",
+            size_hint=(1, 0.6),
+            allow_stretch=True,
+            keep_ratio=True,
         )
         root.add_widget(title)
 
