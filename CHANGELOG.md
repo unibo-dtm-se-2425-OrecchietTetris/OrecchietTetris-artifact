@@ -1,3 +1,10 @@
+## [0.9.1](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.9.0...v0.9.1) (2026-05-19)
+
+
+### Bug Fixes
+
+* reset stats after the score is saved ([3771f32](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/3771f3280348aa8a966311c5ccb1868119580d00))
+
 # [0.9.0](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.8.0...v0.9.0) (2026-04-24)
 
 
