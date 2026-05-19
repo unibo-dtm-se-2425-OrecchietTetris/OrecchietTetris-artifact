@@ -23,7 +23,7 @@ _IC_PLAY = ""
 _IC_STAR = ""      # leaderboard
 _IC_GEAR = ""      # settings
 _IC_QUIT = ""      # exit
-_IC_VOL  = ""      # volume_up
+_IC_VOL = ""       # volume_up
 
 
 class MenuScreen(Screen, IView):
