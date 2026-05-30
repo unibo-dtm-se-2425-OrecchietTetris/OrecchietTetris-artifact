@@ -6,6 +6,7 @@ from OrecchietTetris.view.widgets.rounded_toggle_button import RoundedToggleButt
 from OrecchietTetris.view.widgets.dialog_overlay import DialogOverlay
 from OrecchietTetris.view.widgets.board_widget import BoardWidget
 from OrecchietTetris.view.widgets.leaderboard_row import LeaderboardRow
+from OrecchietTetris.view.widgets.top_player_card import TopPlayerCard
 
 __all__ = [
     "Cell",
@@ -16,4 +17,5 @@ __all__ = [
     "DialogOverlay",
     "BoardWidget",
     "LeaderboardRow",
+    "TopPlayerCard",
 ]
