@@ -25,7 +25,9 @@ _CARD_BG: dict[int, tuple[float, float, float, float]] = {
     2: (0.12, 0.12, 0.14, 1.0),  # cool dark
     3: (0.13, 0.10, 0.08, 1.0),  # warm dark
 }
-_MEDAL_SYMBOL = {1: "★", 2: "✦", 3: "●"}
+# Material Icons codepoint for "star" — safe on any platform where the font is loaded
+_MEDAL_SYMBOL = {1: "", 2: "", 3: ""}
+_MEDAL_FONT = "MaterialIcons"
 # Heights: 1st is tallest to create the podium step effect
 CARD_HEIGHTS: dict[int, int] = {1: 175, 2: 145, 3: 125}
 
@@ -69,11 +71,11 @@ class TopPlayerCard(BoxLayout):
             )
         self.bind(pos=self._update_gfx, size=self._update_gfx)
 
-        # Medal symbol (★ / ✦ / ●)
+        # Medal symbol — rendered with MaterialIcons to guarantee correct glyph
         self.add_widget(Label(
             text=_MEDAL_SYMBOL[rank],
+            font_name=_MEDAL_FONT,
             font_size="26sp",
-            bold=True,
             color=medal,
             size_hint=(1, None),
             height=34,
