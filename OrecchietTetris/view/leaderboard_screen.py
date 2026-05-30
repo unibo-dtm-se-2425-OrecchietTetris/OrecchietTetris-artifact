@@ -87,6 +87,9 @@ class LeaderboardScreen(Screen, IView):
 
     def _build_ui(self) -> None:
         self._current_name: Optional[str] = None
+        # Maps entry name+score key → rank from the previous load, used to
+        # compute rank-change deltas on the next refresh.
+        self._prev_ranks: dict[str, int] = {}
 
         with self.canvas.before:
             Color(0.05, 0.05, 0.10, 1)
@@ -153,6 +156,15 @@ class LeaderboardScreen(Screen, IView):
     # Data refresh
     # ------------------------------------------------------------------
 
+    @staticmethod
+    def _entry_key(rank: int, entry: LeaderboardEntry) -> str:
+        return f"{entry.name}:{entry.score}:{entry.level}:{entry.lines}"
+
+    def _rank_change(self, rank: int, entry: LeaderboardEntry) -> int:
+        key = self._entry_key(rank, entry)
+        prev = self._prev_ranks.get(key)
+        return (prev - rank) if prev is not None else 0
+
     def _refresh(self) -> None:
         entries = self._repo.load_all()
         self._podium_container.clear_widgets()
@@ -193,6 +205,12 @@ class LeaderboardScreen(Screen, IView):
         for i, entry in enumerate(rest):
             self._rows_box.add_widget(self._make_row(i + 4, entry, alt=(i % 2 == 1)))
 
+        # Snapshot current ranks for next refresh delta calculation
+        self._prev_ranks = {
+            self._entry_key(i + 1, e): i + 1
+            for i, e in enumerate(entries)
+        }
+
     def _build_podium(self, top3: list[LeaderboardEntry]) -> None:
         """Arrange top-3 as a podium: 2nd | 1st | 3rd aligned to bottom."""
         # Order: 2nd left, 1st center, 3rd right
@@ -230,6 +248,7 @@ class LeaderboardScreen(Screen, IView):
             score=entry.score,
             level=entry.level,
             lines=entry.lines,
+            rank_change=self._rank_change(rank, entry),
             highlighted=highlighted,
             alt=alt,
         )
