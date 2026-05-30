@@ -89,6 +89,7 @@ class GameScreen(Screen, IView):
         repository: Optional[ILeaderboardRepository] = None,
         audio: Optional[IAudioController] = None,
         on_back_to_menu: Optional[Callable[[], None]] = None,
+        on_name_saved: Optional[Callable[[str], None]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -96,6 +97,7 @@ class GameScreen(Screen, IView):
         self._audio = audio
         self._repo = repository
         self._on_back_to_menu = on_back_to_menu
+        self._on_name_saved = on_name_saved
         self._renderer = BlockRenderer()
         self._renderer.preload_textures()
         self._keyboard: Any = None
@@ -364,6 +366,8 @@ class GameScreen(Screen, IView):
                 level=self._model.level,
                 lines=self._model.lines_cleared,
             ))
+            if self._on_name_saved is not None:
+                self._on_name_saved(name)
             if self._overlay is not None:
                 self.remove_widget(self._overlay)
                 self._overlay = None

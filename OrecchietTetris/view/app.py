@@ -59,6 +59,7 @@ class TetrisApp(App):
             audio=self._audio,
             repository=self._repo,
             on_back_to_menu=self._back_to_menu,
+            on_name_saved=self._on_name_saved,
             name="game",
         )
         self._leaderboard = LeaderboardScreen(
@@ -102,3 +103,7 @@ class TetrisApp(App):
         self._leaderboard.hide()
         self._menu.show()
         self._sm.current = "menu"
+
+    def _on_name_saved(self, name: str) -> None:
+        """Forward the saved player name to the leaderboard for highlighting."""
+        self._leaderboard.set_current_player(name)
