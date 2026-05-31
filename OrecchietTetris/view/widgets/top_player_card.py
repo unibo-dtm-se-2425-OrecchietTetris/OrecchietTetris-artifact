@@ -29,7 +29,7 @@ _CARD_BG: dict[int, tuple[float, float, float, float]] = {
 _MEDAL_SYMBOL = {1: "", 2: "", 3: ""}
 _MEDAL_FONT = "MaterialIcons"
 # Heights: 1st is tallest to create the podium step effect
-CARD_HEIGHTS: dict[int, int] = {1: 175, 2: 145, 3: 125}
+CARD_HEIGHTS: dict[int, int] = {1: 210, 2: 180, 3: 160}
 
 
 class TopPlayerCard(BoxLayout):
