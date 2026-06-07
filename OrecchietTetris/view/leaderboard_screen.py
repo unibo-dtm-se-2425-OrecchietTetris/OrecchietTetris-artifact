@@ -8,7 +8,7 @@ from kivy.uix.boxlayout import BoxLayout  # type: ignore[import-untyped]
 from kivy.uix.anchorlayout import AnchorLayout  # type: ignore[import-untyped]
 from kivy.uix.label import Label  # type: ignore[import-untyped]
 from kivy.uix.scrollview import ScrollView  # type: ignore[import-untyped]
-from kivy.graphics import Color, Rectangle, RoundedRectangle  # type: ignore[import-untyped]
+from kivy.graphics import Color, Rectangle  # type: ignore[import-untyped]
 
 from OrecchietTetris.utils import EventType
 from OrecchietTetris.view.interfaces import IView
@@ -55,6 +55,7 @@ class LeaderboardScreen(Screen, IView):
         super().__init__(**kwargs)
         self._repo = repository
         self._on_back = on_back
+        self._current_name: Optional[str] = None
         self._build_ui()
 
     # ------------------------------------------------------------------
@@ -86,7 +87,6 @@ class LeaderboardScreen(Screen, IView):
     # ------------------------------------------------------------------
 
     def _build_ui(self) -> None:
-        self._current_name: Optional[str] = None
         # Maps entry name+score key → rank from the previous load, used to
         # compute rank-change deltas on the next refresh.
         self._prev_ranks: dict[str, int] = {}

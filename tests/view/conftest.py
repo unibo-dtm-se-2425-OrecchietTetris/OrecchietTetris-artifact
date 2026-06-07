@@ -68,4 +68,4 @@ _STUBS: dict[str, object] = {
 }
 
 for _mod_name, _stub in _STUBS.items():
-    sys.modules.setdefault(_mod_name, _stub)
+    sys.modules.setdefault(_mod_name, _stub)  # type: ignore[arg-type]

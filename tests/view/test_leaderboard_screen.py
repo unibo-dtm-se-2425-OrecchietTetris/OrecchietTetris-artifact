@@ -48,34 +48,34 @@ def test_rank_change_improved() -> None:
     entry = LeaderboardEntry(name="Alice", score=1000, level=3, lines=15)
     key = LeaderboardScreen._entry_key(1, entry)
     stub = _make_stub({key: 5})
-    assert LeaderboardScreen._rank_change(stub, 3, entry) == 2  # was 5, now 3
+    assert LeaderboardScreen._rank_change(stub, 3, entry) == 2  # type: ignore[arg-type]
 
 
 def test_rank_change_dropped() -> None:
     entry = LeaderboardEntry(name="Alice", score=1000, level=3, lines=15)
     key = LeaderboardScreen._entry_key(1, entry)
     stub = _make_stub({key: 2})
-    assert LeaderboardScreen._rank_change(stub, 4, entry) == -2  # was 2, now 4
+    assert LeaderboardScreen._rank_change(stub, 4, entry) == -2  # type: ignore[arg-type]
 
 
 def test_rank_change_same_rank() -> None:
     entry = LeaderboardEntry(name="Alice", score=1000, level=3, lines=15)
     key = LeaderboardScreen._entry_key(1, entry)
     stub = _make_stub({key: 3})
-    assert LeaderboardScreen._rank_change(stub, 3, entry) == 0
+    assert LeaderboardScreen._rank_change(stub, 3, entry) == 0  # type: ignore[arg-type]
 
 
 def test_rank_change_no_previous_data() -> None:
     entry = LeaderboardEntry(name="NewPlayer", score=500, level=1, lines=3)
     stub = _make_stub({})
-    assert LeaderboardScreen._rank_change(stub, 1, entry) == 0
+    assert LeaderboardScreen._rank_change(stub, 1, entry) == 0  # type: ignore[arg-type]
 
 
 def test_rank_change_large_jump() -> None:
     entry = LeaderboardEntry(name="Climber", score=9999, level=9, lines=90)
     key = LeaderboardScreen._entry_key(1, entry)
     stub = _make_stub({key: 20})
-    assert LeaderboardScreen._rank_change(stub, 1, entry) == 19
+    assert LeaderboardScreen._rank_change(stub, 1, entry) == 19  # type: ignore[arg-type]
 
 
 # ---------------------------------------------------------------------------
