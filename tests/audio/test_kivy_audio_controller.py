@@ -369,3 +369,136 @@ def test_queue_does_not_advance_when_inactive(tmp_path: Path) -> None:
 
     assert ctrl._idx == 0
     sounds[1].play.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# next_track / prev_track
+# ---------------------------------------------------------------------------
+
+def _make_two_track_controller(tmp_path: Path) -> tuple[KivyAudioController, MagicMock, MagicMock]:
+    d = tmp_path / "music"
+    d.mkdir()
+    (d / "a.ogg").touch()
+    (d / "b.ogg").touch()
+
+    sound_a = _make_sound()
+    sound_b = _make_sound()
+    sounds = [sound_a, sound_b]
+    load_idx = 0
+    mock_audio_mod = MagicMock()
+
+    def load_side_effect(_: str) -> MagicMock:
+        nonlocal load_idx
+        s = sounds[load_idx % len(sounds)]
+        load_idx += 1
+        return s
+
+    mock_audio_mod.SoundLoader.load.side_effect = load_side_effect
+    modules = {"kivy": MagicMock(), "kivy.core": MagicMock(), "kivy.core.audio": mock_audio_mod}
+
+    with patch.dict(sys.modules, modules):
+        ctrl = KivyAudioController(music_path=d)
+
+    return ctrl, sound_a, sound_b
+
+
+def test_next_track_noop_without_sound(silent_controller: KivyAudioController) -> None:
+    silent_controller.next_track()  # must not raise
+
+
+def test_prev_track_noop_without_sound(silent_controller: KivyAudioController) -> None:
+    silent_controller.prev_track()  # must not raise
+
+
+def test_next_track_advances_and_plays_when_active(tmp_path: Path) -> None:
+    ctrl, sound_a, sound_b = _make_two_track_controller(tmp_path)
+    ctrl._active = True
+    ctrl.next_track()
+
+    assert ctrl._idx == 1
+    sound_a.stop.assert_called_once()
+    sound_b.play.assert_called_once()
+
+
+def test_next_track_wraps_to_first_from_last(tmp_path: Path) -> None:
+    ctrl, sound_a, sound_b = _make_two_track_controller(tmp_path)
+    ctrl._active = True
+    ctrl._idx = 1
+    ctrl.next_track()
+
+    assert ctrl._idx == 0
+    sound_b.stop.assert_called_once()
+    sound_a.play.assert_called_once()
+
+
+def test_next_track_noop_when_inactive(tmp_path: Path) -> None:
+    ctrl, sound_a, sound_b = _make_two_track_controller(tmp_path)
+    ctrl._active = False
+    ctrl.next_track()
+
+    assert ctrl._idx == 0
+    sound_a.stop.assert_not_called()
+    sound_b.play.assert_not_called()
+
+
+def test_prev_track_goes_back_and_plays_when_active(tmp_path: Path) -> None:
+    ctrl, sound_a, sound_b = _make_two_track_controller(tmp_path)
+    ctrl._active = True
+    ctrl._idx = 1
+    ctrl.prev_track()
+
+    assert ctrl._idx == 0
+    sound_b.stop.assert_called_once()
+    sound_a.play.assert_called_once()
+
+
+def test_prev_track_wraps_to_last_from_first(tmp_path: Path) -> None:
+    ctrl, sound_a, sound_b = _make_two_track_controller(tmp_path)
+    ctrl._active = True
+    ctrl._idx = 0
+    ctrl.prev_track()
+
+    assert ctrl._idx == 1
+    sound_a.stop.assert_called_once()
+    sound_b.play.assert_called_once()
+
+
+def test_prev_track_noop_when_inactive(tmp_path: Path) -> None:
+    ctrl, sound_a, sound_b = _make_two_track_controller(tmp_path)
+    ctrl._active = False
+    ctrl.prev_track()
+
+    assert ctrl._idx == 0
+    sound_a.stop.assert_not_called()
+    sound_b.play.assert_not_called()
+
+
+def test_next_track_does_not_double_advance_when_stop_fires_on_track_end(tmp_path: Path) -> None:
+    """Regression: stop() fires on_stop -> _on_track_end, which must not advance idx again."""
+    ctrl, sound_a, sound_b = _make_two_track_controller(tmp_path)
+    ctrl._active = True
+
+    def stop_side_effect() -> None:
+        ctrl._on_track_end()
+
+    sound_a.stop.side_effect = stop_side_effect
+    ctrl.next_track()
+
+    assert ctrl._idx == 1
+    sound_b.play.call_count == 1
+
+
+def test_prev_track_does_not_double_advance_when_stop_fires_on_track_end(tmp_path: Path) -> None:
+    """Regression: same as above for prev_track."""
+    ctrl, sound_a, sound_b = _make_two_track_controller(tmp_path)
+    ctrl._active = True
+    ctrl._idx = 1
+
+    def stop_side_effect() -> None:
+        ctrl._on_track_end()
+
+    sound_b.stop.side_effect = stop_side_effect
+    ctrl.prev_track()
+
+    assert ctrl._idx == 0
+    sound_a.play.call_count == 1

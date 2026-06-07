@@ -32,6 +32,7 @@ class KivyAudioController(IAudioController):
         self._queue: list[Any] = []
         self._idx: int = 0
         self._active: bool = False
+        self._skipping: bool = False
 
         folder = music_path if music_path is not None else MUSIC_DIR
         self._queue = self._load_queue(folder)
@@ -88,8 +89,26 @@ class KivyAudioController(IAudioController):
     # Queue logic
     # ------------------------------------------------------------------
 
+    def next_track(self) -> None:
+        if not self._queue or not self._active:
+            return
+        self._skipping = True
+        self._queue[self._idx].stop()
+        self._skipping = False
+        self._idx = (self._idx + 1) % len(self._queue)
+        self._queue[self._idx].play()
+
+    def prev_track(self) -> None:
+        if not self._queue or not self._active:
+            return
+        self._skipping = True
+        self._queue[self._idx].stop()
+        self._skipping = False
+        self._idx = (self._idx - 1) % len(self._queue)
+        self._queue[self._idx].play()
+
     def _on_track_end(self, *_: Any) -> None:
-        if not self._active or not self._queue:
+        if not self._active or not self._queue or self._skipping:
             return
         self._idx = (self._idx + 1) % len(self._queue)
         self._queue[self._idx].play()

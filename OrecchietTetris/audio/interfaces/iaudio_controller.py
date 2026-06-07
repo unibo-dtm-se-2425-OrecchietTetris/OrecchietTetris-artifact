@@ -31,3 +31,11 @@ class IAudioController(ABC):
     @abstractmethod
     def is_playing(self) -> bool:
         """True while background music is playing."""
+
+    @abstractmethod
+    def next_track(self) -> None:
+        """Skip to the next track in the playlist."""
+
+    @abstractmethod
+    def prev_track(self) -> None:
+        """Go back to the previous track in the playlist."""

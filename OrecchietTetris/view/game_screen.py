@@ -292,6 +292,12 @@ class GameScreen(Screen, IView):
             self._handle_pause()
         elif key == "m":
             self._toggle_music()
+        elif key == "n":
+            if self._audio:
+                self._audio.next_track()
+        elif key == "b":
+            if self._audio:
+                self._audio.prev_track()
         elif key in ("q"):
             if self._quit_overlay is None:
                 self._handle_quit()
