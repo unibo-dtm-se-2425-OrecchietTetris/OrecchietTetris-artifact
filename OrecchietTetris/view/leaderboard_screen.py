@@ -5,26 +5,45 @@ from typing import Any, Callable, Optional
 import i18n  # type: ignore[import-untyped]
 from kivy.uix.screenmanager import Screen  # type: ignore[import-untyped]
 from kivy.uix.boxlayout import BoxLayout  # type: ignore[import-untyped]
-from kivy.uix.gridlayout import GridLayout  # type: ignore[import-untyped]
+from kivy.uix.anchorlayout import AnchorLayout  # type: ignore[import-untyped]
 from kivy.uix.label import Label  # type: ignore[import-untyped]
-from kivy.uix.button import Button  # type: ignore[import-untyped]
 from kivy.uix.scrollview import ScrollView  # type: ignore[import-untyped]
 from kivy.graphics import Color, Rectangle  # type: ignore[import-untyped]
 
 from OrecchietTetris.utils import EventType
 from OrecchietTetris.view.interfaces import IView
+from OrecchietTetris.view.widgets import RoundedButton, LeaderboardRow, TopPlayerCard
+from OrecchietTetris.view.widgets.top_player_card import CARD_HEIGHTS
 from OrecchietTetris.leaderboard.interfaces import ILeaderboardRepository
+from OrecchietTetris.leaderboard.leaderboard_entry import LeaderboardEntry
+
+_PODIUM_ROW_H = max(CARD_HEIGHTS.values()) + 10  # container height for the podium
+_SECTION_H = 28
+
+
+def _section_label(text: str) -> Label:
+    """Styled divider label for tier sections."""
+    return Label(
+        text=text,
+        font_size="12sp",
+        bold=True,
+        color=(0.40, 0.42, 0.58, 1.0),
+        size_hint=(1, None),
+        height=_SECTION_H,
+        halign="left",
+        valign="middle",
+    )
 
 
 class LeaderboardScreen(Screen, IView):
-    """Screen that displays the leaderboard table.
+    """Game-like leaderboard screen.
 
-    Parameters
-    ----------
-    repository:
-        The leaderboard repository to read entries from.
-    on_back:
-        Called (no arguments) when the player presses the back button.
+    Layout
+    ------
+    * Title bar
+    * Podium section (top-3 cards, step-aligned to bottom) when ≥ 3 entries
+    * "Rankings" section header + scrollable card rows for rank 4+
+    * Back button
     """
 
     def __init__(
@@ -36,6 +55,7 @@ class LeaderboardScreen(Screen, IView):
         super().__init__(**kwargs)
         self._repo = repository
         self._on_back = on_back
+        self._current_name: Optional[str] = None
         self._build_ui()
 
     # ------------------------------------------------------------------
@@ -45,7 +65,7 @@ class LeaderboardScreen(Screen, IView):
     def show(self) -> None:
         self.opacity = 1.0
         self.disabled = False
-        self._refresh_table()
+        self._refresh()
 
     def hide(self) -> None:
         self.opacity = 0.0
@@ -55,47 +75,71 @@ class LeaderboardScreen(Screen, IView):
         pass
 
     # ------------------------------------------------------------------
-    # Internal helpers
+    # Public helpers
+    # ------------------------------------------------------------------
+
+    def set_current_player(self, name: str) -> None:
+        """Mark whose row should be highlighted on the next show()."""
+        self._current_name = name
+
+    # ------------------------------------------------------------------
+    # UI construction
     # ------------------------------------------------------------------
 
     def _build_ui(self) -> None:
+        # Maps entry name+score key → rank from the previous load, used to
+        # compute rank-change deltas on the next refresh.
+        self._prev_ranks: dict[str, int] = {}
+
         with self.canvas.before:
             Color(0.05, 0.05, 0.10, 1)
             self._bg_rect = Rectangle(pos=self.pos, size=self.size)
         self.bind(pos=self._update_bg, size=self._update_bg)
 
-        root = BoxLayout(orientation="vertical", padding=30, spacing=15)
+        self._root = BoxLayout(
+            orientation="vertical",
+            padding=[20, 16],
+            spacing=10,
+        )
 
-        root.add_widget(Label(
+        # Title
+        self._root.add_widget(Label(
             text=i18n.t("leaderboard"),
-            font_size="36sp",
+            font_size="34sp",
             bold=True,
-            color=(0.9, 0.5, 0.1, 1),
+            color=(0.9, 0.5, 0.1, 1.0),
             size_hint=(1, None),
-            height=50,
+            height=48,
         ))
 
-        # Header row
-        header = GridLayout(cols=5, size_hint=(1, None), height=36, spacing=4)
-        for text in (i18n.t("rank"), i18n.t("name"), i18n.t("score"),
-                     i18n.t("level"), i18n.t("lines")):
-            header.add_widget(Label(
-                text=text,
-                bold=True,
-                font_size="15sp",
-                color=(0.9, 0.5, 0.1, 1),
-            ))
-        root.add_widget(header)
+        # Podium placeholder (filled in _refresh)
+        self._podium_container = BoxLayout(
+            orientation="vertical",
+            size_hint=(1, None),
+            height=0,
+            spacing=6,
+        )
+        self._root.add_widget(self._podium_container)
 
-        # Scrollable table
-        self._table = GridLayout(cols=5, spacing=4, size_hint_y=None)
-        self._table.bind(minimum_height=self._table.setter("height"))
+        # Section label placeholder
+        self._section_lbl = _section_label("")
+        self._section_lbl.height = 0
+        self._root.add_widget(self._section_lbl)
+
+        # Scrollable rows
+        self._rows_box = BoxLayout(
+            orientation="vertical",
+            size_hint_y=None,
+            spacing=4,
+        )
+        self._rows_box.bind(minimum_height=self._rows_box.setter("height"))
         scroll = ScrollView(size_hint=(1, 1))
-        scroll.add_widget(self._table)
-        root.add_widget(scroll)
+        scroll.add_widget(self._rows_box)
+        self._root.add_widget(scroll)
 
-        btn_back = Button(
-            text="\ue5c4",
+        # Back button
+        btn_back = RoundedButton(
+            text="",
             font_name="MaterialIcons",
             font_size="28sp",
             size_hint=(0.4, None),
@@ -104,50 +148,112 @@ class LeaderboardScreen(Screen, IView):
             background_color=(0.3, 0.3, 0.7, 1),
         )
         btn_back.bind(on_release=self._handle_back)
-        root.add_widget(btn_back)
+        self._root.add_widget(btn_back)
 
-        self.add_widget(root)
+        self.add_widget(self._root)
 
-    def _refresh_table(self) -> None:
-        self._table.clear_widgets()
-        entries = self._repo.load_all()
-        if not entries:
-            self._table.add_widget(Label(
-                text=i18n.t("empty_leaderboard"),
-                font_size="16sp",
-                color=(0.7, 0.7, 0.7, 1),
-                size_hint_y=None,
-                height=40,
-            ))
-            # fill remaining columns so the single-cell message spans correctly
-            for _ in range(4):
-                self._table.add_widget(Label(size_hint_y=None, height=40))
-            return
-
-        row_colors = [(0.12, 0.12, 0.18, 1), (0.08, 0.08, 0.14, 1)]
-        for rank, entry in enumerate(entries, start=1):
-            bg = row_colors[rank % 2]
-            for val in (str(rank), entry.name, str(entry.score),
-                        str(entry.level), str(entry.lines)):
-                lbl = Label(
-                    text=val,
-                    font_size="14sp",
-                    color=(1, 1, 1, 1),
-                    size_hint_y=None,
-                    height=34,
-                )
-                with lbl.canvas.before:
-                    Color(*bg)
-                    Rectangle(pos=lbl.pos, size=lbl.size)
-                lbl.bind(
-                    pos=lambda w, *_: self._redraw_row_bg(w),
-                    size=lambda w, *_: self._redraw_row_bg(w),
-                )
-                self._table.add_widget(lbl)
+    # ------------------------------------------------------------------
+    # Data refresh
+    # ------------------------------------------------------------------
 
     @staticmethod
-    def _redraw_row_bg(widget: Any) -> None:
-        widget.canvas.before.clear()
+    def _entry_key(rank: int, entry: LeaderboardEntry) -> str:
+        return f"{entry.name}:{entry.score}:{entry.level}:{entry.lines}"
+
+    def _rank_change(self, rank: int, entry: LeaderboardEntry) -> int:
+        key = self._entry_key(rank, entry)
+        prev = self._prev_ranks.get(key)
+        return (prev - rank) if prev is not None else 0
+
+    def _refresh(self) -> None:
+        entries = self._repo.load_all()
+        self._podium_container.clear_widgets()
+        self._rows_box.clear_widgets()
+
+        if not entries:
+            self._podium_container.height = 0
+            self._section_lbl.text = ""
+            self._section_lbl.height = 0
+            self._rows_box.add_widget(Label(
+                text=i18n.t("empty_leaderboard"),
+                font_size="16sp",
+                color=(0.55, 0.55, 0.65, 1.0),
+                size_hint_y=None,
+                height=50,
+            ))
+            return
+
+        top3 = entries[:3]
+        rest = entries[3:]
+
+        # ── Podium (top-3) ────────────────────────────────────────────
+        if len(top3) >= 3:
+            self._build_podium(top3)
+        else:
+            self._podium_container.height = 0
+            for i, entry in enumerate(top3):
+                self._rows_box.add_widget(self._make_row(i + 1, entry))
+
+        # ── Rankings list (rank 4+) ───────────────────────────────────
+        if rest:
+            self._section_lbl.text = f"— {i18n.t('rankings')} —"
+            self._section_lbl.height = _SECTION_H
+        else:
+            self._section_lbl.text = ""
+            self._section_lbl.height = 0
+
+        for i, entry in enumerate(rest):
+            self._rows_box.add_widget(self._make_row(i + 4, entry, alt=(i % 2 == 1)))
+
+        # Snapshot current ranks for next refresh delta calculation
+        self._prev_ranks = {
+            self._entry_key(i + 1, e): i + 1
+            for i, e in enumerate(entries)
+        }
+
+    def _build_podium(self, top3: list[LeaderboardEntry]) -> None:
+        """Arrange top-3 as a podium: 2nd | 1st | 3rd aligned to bottom."""
+        # Order: 2nd left, 1st center, 3rd right
+        order = [(2, top3[1]), (1, top3[0]), (3, top3[2])]
+
+        podium_row = BoxLayout(
+            orientation="horizontal",
+            size_hint=(1, None),
+            height=_PODIUM_ROW_H,
+            spacing=6,
+        )
+        for rank, entry in order:
+            anchor = AnchorLayout(anchor_x="center", anchor_y="bottom", size_hint=(1, 1))
+            card = TopPlayerCard(
+                rank=rank,
+                name=entry.name,
+                score=entry.score,
+                level=entry.level,
+                lines=entry.lines,
+            )
+            anchor.add_widget(card)
+            podium_row.add_widget(anchor)
+
+        self._podium_container.add_widget(podium_row)
+        self._podium_container.height = _PODIUM_ROW_H
+
+    def _make_row(self, rank: int, entry: LeaderboardEntry, alt: bool = False) -> LeaderboardRow:
+        highlighted = (
+            self._current_name is not None
+            and entry.name == self._current_name
+        )
+        return LeaderboardRow(
+            rank=rank,
+            name=entry.name,
+            score=entry.score,
+            level=entry.level,
+            lines=entry.lines,
+            rank_change=self._rank_change(rank, entry),
+            highlighted=highlighted,
+            alt=alt,
+        )
+
+    # ------------------------------------------------------------------
 
     def _handle_back(self, *_: Any) -> None:
         if self._on_back is not None:
