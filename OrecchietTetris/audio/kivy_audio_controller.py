@@ -6,7 +6,7 @@ from typing import Any, ClassVar, Optional
 from OrecchietTetris.audio.interfaces.iaudio_controller import IAudioController
 from OrecchietTetris.utils.paths import MUSIC_DIR
 
-_EXTENSIONS = {".ogg", ".mp3", ".wav"}
+_EXTENSIONS = {".ogg", ".wav"}
 
 
 class KivyAudioController(IAudioController):
