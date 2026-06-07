@@ -1,3 +1,20 @@
+# [0.10.0](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.9.3...v0.10.0) (2026-06-07)
+
+
+### Bug Fixes
+
+* **view/widgets:** increase podium card heights to prevent content clipping ([8b9394e](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/8b9394e7fd33c65a35d7aa973a3a67df2ce4962a)), closes [#3](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/issues/3) [#2](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/issues/2)
+* **view/widgets:** use MaterialIcons star glyph for medal symbols in TopPlayerCard ([5267ac7](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/5267ac793b129f8483d0ce7cc1f5e106edfafdc3))
+
+
+### Features
+
+* **view/widgets:** add LeaderboardRow card widget ([3637924](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/36379240659274cdba75e290ab987da012fe45be))
+* **view/widgets:** add TopPlayerCard widget for podium top-3 ([9799116](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/97991167860d24729577c5fdd7d5c38333a75cf8))
+* **view:** highlight current-player rows in leaderboard ([ec60139](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/ec601390ac20145833c4b05f44fb684a88130bd9))
+* **view:** rebuild LeaderboardScreen with card layout and tier sections ([6f981ea](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/6f981ea78bbc48a4429f14c14883cca3646ea99b))
+* **view:** show rank-change indicator on leaderboard rows ([cd57750](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/cd577503362b03c240e5b17204917a9a11968026))
+
 ## [0.9.3](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.9.2...v0.9.3) (2026-05-19)
 
 
