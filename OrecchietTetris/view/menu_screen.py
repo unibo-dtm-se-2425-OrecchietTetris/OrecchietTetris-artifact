@@ -11,6 +11,7 @@ from kivy.graphics import Color, Rectangle  # type: ignore[import-untyped]
 from kivy.app import App  # type: ignore[import-untyped]
 
 from OrecchietTetris.utils import EventType
+from OrecchietTetris.utils.paths import ASSETS_DIR
 from OrecchietTetris.view.interfaces import IView
 from OrecchietTetris.audio.interfaces import IAudioController
 from OrecchietTetris.view.widgets import RoundedButton, RoundedToggleButton, DialogOverlay
@@ -84,7 +85,7 @@ class MenuScreen(Screen, IView):
         root = BoxLayout(orientation="vertical", padding=40, spacing=14)
 
         title = Image(
-            source="assets/menu_screen_logo.png",
+            source=str(ASSETS_DIR / "menu_screen_logo.png"),
             size_hint=(1, 0.6),
             allow_stretch=True,
             keep_ratio=True,

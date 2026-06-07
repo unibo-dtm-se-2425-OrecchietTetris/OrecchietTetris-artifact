@@ -34,7 +34,7 @@ An exact copy of the Tetris game, with Apulian elements. Built as a Software Eng
     pip install -r requirements.txt
     ```
 
-3. Install the project's dependencies:
+3. Install the project's dependencies (creates `.venv/` inside the project):
     ```bash
     poetry install
     npm install
@@ -42,43 +42,69 @@ An exact copy of the Tetris game, with Apulian elements. Built as a Software Eng
 
 4. (Optional) Install pre-commit hooks for commit-message linting:
     ```bash
-    poetry run poe hooks
+    .venv/bin/poe hooks        # macOS / Linux
+    .venv\Scripts\poe hooks    # Windows
     ```
+
+## Virtual environment
+
+All project commands run inside the `.venv/` virtual environment created by Poetry.
+Activate it once per terminal session, then use tools directly without any prefix:
+
+```bash
+# macOS / Linux
+source .venv/bin/activate
+
+# Windows (PowerShell)
+.venv\Scripts\Activate.ps1
+
+# Windows (cmd)
+.venv\Scripts\activate.bat
+```
+
+To deactivate:
+```bash
+deactivate
+```
 
 ## Usage
 
-Run the game:
+Activate the virtual environment (see above), then run the game:
+
 ```bash
-poetry run OrecchietTetris
+OrecchietTetris
 ```
 
-or alternatively:
+or:
+
 ```bash
 python -m OrecchietTetris
 ```
 
 ## Development
 
+Activate the virtual environment first, then use the following commands directly.
+
 ### Run tests
 ```bash
-poetry run poe test
+poe test
 ```
 
 Run a single test file or test case:
 ```bash
-poetry run pytest -v tests/model/test_tetromino.py
-poetry run pytest -v tests/model/test_tetromino.py::test_rotations
+pytest -v tests/model/test_tetromino.py
+pytest -v tests/model/test_tetromino.py::test_rotations
 ```
 
 ### Coverage
 ```bash
-poetry run poe coverage
+poe coverage
 ```
 
 ### Lint & type check
 ```bash
-poetry run poe flake8
-poetry run poe mypy
+poe flake8
+poe mypy
 ```
 
 ## Project structure
