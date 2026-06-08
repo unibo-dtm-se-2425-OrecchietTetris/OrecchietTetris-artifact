@@ -608,3 +608,63 @@ def test_loop_exits_when_game_over() -> None:
     assert game._game_thread is not None
     game._game_thread.join(timeout=1.0)
     assert not game._game_thread.is_alive()
+
+
+# ---------------------------------------------------------------------------
+# Missing coverage: lines 207, 214, 240
+# ---------------------------------------------------------------------------
+
+def test_rotate_returns_false_when_current_piece_is_none() -> None:
+    """rotate() must return False when the board has no current piece (line 207).
+
+    This edge case can occur if the model is in a running state but the board's
+    piece reference is cleared before the call.
+    """
+    game = Tetris()
+    game.start()
+    # Force the board into the 'no current piece' state while the game is live
+    game._board._current_piece = None
+    result = game.rotate()
+    assert result is False
+
+
+def test_rotate_applies_wall_kick_with_nonzero_column_offset() -> None:
+    """When the rotated position at offset=0 is blocked, rotate() must try
+    adjacent columns and call move_falling_piece() with the offset column (line 214).
+    """
+    game = Tetris(factory=FixedTetrominoFactory(ShapeType.I_SHAPE))
+    game.start()
+
+    # Intercept is_valid_position: reject offset=0 (first call), accept offset=-1 (second)
+    call_count: list[int] = [0]
+    move_calls: list[tuple[int, int]] = []
+    original_move = game._board.move_falling_piece
+
+    def patched_is_valid(piece: Any, row: int, col: int) -> bool:
+        call_count[0] += 1
+        return call_count[0] > 1  # first call False, rest True
+
+    def patched_move(row: int, col: int) -> None:
+        move_calls.append((row, col))
+        original_move(row, col)
+
+    game._board.is_valid_position = patched_is_valid  # type: ignore[assignment]
+    game._board.move_falling_piece = patched_move  # type: ignore[assignment]
+
+    result = game.rotate()
+
+    assert result is True
+    # move_falling_piece must have been called exactly once (the wall-kick path)
+    assert len(move_calls) == 1
+
+
+def test_hold_returns_false_when_current_piece_is_none() -> None:
+    """hold() must return False when the board has no current piece (line 240).
+
+    Same edge case as rotate(): board piece is cleared while game is running.
+    """
+    game = Tetris()
+    game.start()
+    game._board._current_piece = None
+    result = game.hold()
+    assert result is False

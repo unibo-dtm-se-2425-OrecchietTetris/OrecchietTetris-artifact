@@ -14,7 +14,7 @@ license = "Apache 2.0"
 readme = "README.md"
 homepage = "https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact"
 repository = "https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact"
-keywords = ["tetris", "game", "software engineering"]
+keywords = ["tetris", "game", "software engineering", "apulia", "italy"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -23,7 +23,6 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-# update the Python versions in .github/workflows/check.yml if you change this
 python = ">= 3.11.0 < 4.0.0"
 poetry = "2.3.4"
 python-i18n = "^0.3.9"
@@ -79,3 +78,4 @@ show_error_codes = true
 [[tool.mypy.overrides]]
 module = "tests.*"
 disallow_untyped_defs = false
+disallow_incomplete_defs = false

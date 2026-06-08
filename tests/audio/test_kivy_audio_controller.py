@@ -502,3 +502,29 @@ def test_prev_track_does_not_double_advance_when_stop_fires_on_track_end(tmp_pat
 
     assert ctrl._idx == 0
     sound_a.play.call_count == 1
+
+
+# ---------------------------------------------------------------------------
+# _load_queue: exception path — lines 126-127
+# ---------------------------------------------------------------------------
+
+def test_load_queue_returns_empty_when_kivy_audio_import_raises(tmp_path: Path) -> None:
+    """_load_queue() must silently return [] when importing kivy.core.audio
+    raises any Exception (not only ImportError), covering the broad except
+    clause that keeps the controller usable even in broken environments.
+    """
+    audio_dir = tmp_path / "music"
+    audio_dir.mkdir()
+    (audio_dir / "track.ogg").touch()
+
+    with patch.dict(
+        sys.modules,
+        {
+            "kivy": MagicMock(),
+            "kivy.core": MagicMock(),
+            "kivy.core.audio": None,  # None in sys.modules raises ImportError on import
+        },
+    ):
+        result = KivyAudioController._load_queue(audio_dir)
+
+    assert result == []
