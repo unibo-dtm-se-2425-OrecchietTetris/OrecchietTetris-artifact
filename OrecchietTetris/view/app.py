@@ -20,10 +20,10 @@ class TetrisApp(App):
     Screen flow
     -----------
     * Starts on **MenuScreen**.
-    * Pressing *New Game* switches to **GameScreen** and calls ``model.play()``.
+    * Pressing *New Game* switches to **GameScreen** and calls ``game.begin()``.
     * Pressing *Leaderboard* switches to **LeaderboardScreen**.
     * On game over or when the player presses *Back to Menu* the app returns to
-      **MenuScreen** and stops the model loop.
+      **MenuScreen** and ends the game-screen tick loop.
     """
 
     title = "OrecchietTetris"
@@ -83,11 +83,11 @@ class TetrisApp(App):
         self._game.show()
         self._menu.hide()
         self._sm.current = "game"
-        self._model.play()
+        self._game.begin()
 
     def _back_to_menu(self) -> None:
         """Stop the game loop and return to the main menu."""
-        self._model.stop()
+        self._game.end()
         self._game.hide()
         self._menu.show()
         self._sm.current = "menu"

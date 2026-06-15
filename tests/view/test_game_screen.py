@@ -394,8 +394,9 @@ def test_confirm_quit_calls_back_to_menu(gs, model) -> None:
     gs._on_back_to_menu = on_back
     model.is_running = True
     gs._quit_overlay = MagicMock()
-    gs._confirm_quit()
-    model.stop.assert_called_once()
+    with patch.object(gs, "end") as mock_end:
+        gs._confirm_quit()
+    mock_end.assert_called_once()
     on_back.assert_called_once()
     assert gs._quit_overlay is None
 
@@ -490,14 +491,15 @@ def test_start_with_countdown_delegates_to_show_countdown(gs) -> None:
         mock_cd.assert_called_once_with(gs.restart)
 
 
-def test_restart_calls_model_play_and_updates_labels(gs, model) -> None:
+def test_restart_calls_begin_and_updates_labels(gs, model) -> None:
     model.score = 100
     model.level = 2
     model.lines_cleared = 5
     model.held_piece = None
     model.can_hold = True
-    gs._restart()
-    model.play.assert_called_once()
+    with patch.object(gs, "begin") as mock_begin:
+        gs._restart()
+    mock_begin.assert_called_once()
     assert gs._lbl_score.text == "100"
     assert gs._lbl_level.text == "2"
     assert gs._lbl_lines.text == "5"
@@ -601,3 +603,47 @@ def test_on_save_closure_saves_entry_and_shows_no_name_overlay(gs_with_audio, mo
 
     repo.save.assert_called_once()
     gs_with_audio._on_name_saved.assert_called_once()
+
+
+# ---------------------------------------------------------------------------
+# Game-loop timer: begin / _on_tick / end
+# ---------------------------------------------------------------------------
+
+def test_begin_starts_model_and_schedules_first_tick(gs, model) -> None:
+    model.tick_interval = 0.5
+    with patch("OrecchietTetris.view.game_screen.Clock") as clock:
+        gs.begin()
+    model.start.assert_called_once()
+    clock.schedule_once.assert_called_once_with(gs._on_tick, 0.5)
+
+
+def test_on_tick_advances_model_and_reschedules_while_running(gs, model) -> None:
+    model.is_game_over = False
+    model.tick_interval = 0.3
+    with patch("OrecchietTetris.view.game_screen.Clock") as clock:
+        gs._on_tick(0.0)
+    model.tick.assert_called_once()
+    clock.schedule_once.assert_called_once_with(gs._on_tick, 0.3)
+
+
+def test_on_tick_does_not_reschedule_when_game_over(gs, model) -> None:
+    model.is_game_over = True
+    with patch("OrecchietTetris.view.game_screen.Clock") as clock:
+        gs._on_tick(0.0)
+    model.tick.assert_called_once()
+    clock.schedule_once.assert_not_called()
+
+
+def test_end_cancels_pending_tick(gs, model) -> None:
+    model.tick_interval = 0.5
+    with patch("OrecchietTetris.view.game_screen.Clock") as clock:
+        event = MagicMock()
+        clock.schedule_once.return_value = event
+        gs.begin()
+        gs.end()
+    event.cancel.assert_called_once()
+    assert gs._tick_event is None
+
+
+def test_end_without_scheduled_tick_does_not_raise(gs) -> None:
+    gs.end()  # must not raise

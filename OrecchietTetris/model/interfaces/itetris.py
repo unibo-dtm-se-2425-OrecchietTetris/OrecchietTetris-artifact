@@ -159,21 +159,6 @@ class ITetris(Subject, ABC):
     @abstractmethod
     def tick_interval(self) -> float:
         """Seconds between automatic gravity ticks at the current level.
-        """
 
-    @abstractmethod
-    def play(self) -> None:
-        """Start a fresh game and launch the automatic tick loop.
-
-        Internally calls ``start()`` and spawns a daemon thread that fires
-        ``tick()`` every ``tick_interval`` seconds. If a loop is already
-        running it is stopped first, so ``play()`` always begins a clean game.
-        """
-
-    @abstractmethod
-    def stop(self) -> None:
-        """Stop the automatic tick loop. The game state is preserved.
-
-        Signals the background thread to exit and waits for it to finish.
-        Safe to call even if the loop is not running.
+        The view layer is responsible for driving ``tick()`` on this interval.
         """

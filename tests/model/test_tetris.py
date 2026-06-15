@@ -10,7 +10,6 @@ from typing import Any, List, Tuple
 import pytest
 
 from OrecchietTetris.utils import Observer, EventType
-import time
 
 from OrecchietTetris.model.tetris import (Tetris)
 from OrecchietTetris.model.interfaces import ITetrominoFactory, ITetromino
@@ -525,89 +524,21 @@ def test_tick_interval_decreases_with_level() -> None:
 
 
 # ---------------------------------------------------------------------------
-# play() / stop()
+# tick() drives gravity (the view owns the timer; the model just advances)
 # ---------------------------------------------------------------------------
 
-def test_play_starts_the_game() -> None:
+def test_tick_advances_the_piece_one_row() -> None:
     game = Tetris()
-    game.play()
-    assert game.is_running
-    game.stop()
+    game.start()
+    start_row = game.current_row
+    game.tick()
+    assert game.current_row == start_row + 1
 
 
-def test_play_resets_score() -> None:
-    game = Tetris()
-    game.play()
-    game._score = 999
-    game.play()  # restarts
-    assert game.score == 0
-    game.stop()
-
-
-def test_play_spawns_background_thread() -> None:
-    game = Tetris()
-    game.play()
-    assert game._game_thread is not None
-    assert game._game_thread.is_alive()
-    game.stop()
-
-
-def test_stop_terminates_thread() -> None:
-    game = Tetris()
-    game.play()
-    game.stop()
-    assert game._game_thread is None
-
-
-def test_stop_when_not_playing_does_not_raise() -> None:
-    Tetris().stop()  # must not raise
-
-
-def test_play_replaces_existing_loop() -> None:
-    game = Tetris()
-    game.play()
-    first_thread = game._game_thread
-    game.play()  # must stop old loop and start a new one
-    assert game._game_thread is not first_thread
-    game.stop()
-
-
-def test_play_advances_piece_automatically() -> None:
-    """The background thread must call tick() and move the piece down."""
-    game = Tetris()
-    # Override tick_interval via the instance to make the loop very fast
-    game.__class__ = type(          # narrow subclass only for this instance
-        "_FastTetris",
-        (Tetris,),
-        {"tick_interval": property(lambda self: 0.01)},
-    )
-    game.play()
-    time.sleep(0.15)   # allow ~15 ticks
-    game.stop()
-    assert game.current_row > 0
-
-
-def test_loop_exits_when_game_over() -> None:
-    """The background thread must exit on its own once the game is over."""
-    game = Tetris()
-    game.__class__ = type(
-        "_FastTetris",
-        (Tetris,),
-        {"tick_interval": property(lambda self: 0.01)},
-    )
-    game.play()
-    # Fill the spawn columns to force an immediate game-over on next spawn
-    spawn_col = game.board.cols // 2 - 1
-    for r in [0, 1]:
-        game._board._grid[r][spawn_col] = 1
-        game._board._grid[r][spawn_col + 1] = 1
-    # Wait long enough for the current piece to lock and trigger game-over
-    time.sleep(1)
-    assert game.is_game_over
-    # Thread should have exited on its own (join with generous timeout)
-    assert game._game_thread is not None
-    game._game_thread.join(timeout=1.0)
-    assert not game._game_thread.is_alive()
+def test_tick_is_a_noop_when_not_running() -> None:
+    game = Tetris()  # never started → not running
+    game.tick()  # must not raise
+    assert not game.is_running
 
 
 # ---------------------------------------------------------------------------

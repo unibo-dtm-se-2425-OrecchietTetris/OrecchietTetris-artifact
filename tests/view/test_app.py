@@ -2,7 +2,7 @@
 
 TetrisApp is the Kivy entry point.  Its build() method wires together the
 model, audio, leaderboard repo, and all three screens.  Screen-transition
-methods delegate to screens (show/hide) and the model (play/stop).
+methods delegate to screens (show/hide, begin/end).
 
 We mock all heavy dependencies so the test suite stays fast and headless.
 """
@@ -87,9 +87,9 @@ def test_start_game_shows_game_and_hides_menu(app: TetrisApp) -> None:
     app._menu.hide.assert_called_once()  # type: ignore[attr-defined]
 
 
-def test_start_game_calls_model_play(app: TetrisApp) -> None:
+def test_start_game_begins_game_loop(app: TetrisApp) -> None:
     app._start_game()
-    app._model.play.assert_called_once()  # type: ignore[attr-defined]
+    app._game.begin.assert_called_once()  # type: ignore[attr-defined]
 
 
 def test_start_game_switches_screen_to_game(app: TetrisApp) -> None:
@@ -101,9 +101,9 @@ def test_start_game_switches_screen_to_game(app: TetrisApp) -> None:
 # _back_to_menu — lines 88-93
 # ---------------------------------------------------------------------------
 
-def test_back_to_menu_stops_model(app: TetrisApp) -> None:
+def test_back_to_menu_ends_game_loop(app: TetrisApp) -> None:
     app._back_to_menu()
-    app._model.stop.assert_called_once()  # type: ignore[attr-defined]
+    app._game.end.assert_called_once()  # type: ignore[attr-defined]
 
 
 def test_back_to_menu_shows_menu_and_hides_game(app: TetrisApp) -> None:

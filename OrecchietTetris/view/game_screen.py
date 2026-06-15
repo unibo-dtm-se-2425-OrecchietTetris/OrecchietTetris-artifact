@@ -106,6 +106,7 @@ class GameScreen(Screen, IView):
 
         self._board: BoardWidget
         self._countdown_overlay: Optional[Widget] = None
+        self._tick_event: Optional[Any] = None
         self._on_try_again = self._restart
         self._root: BoxLayout
         self._hold_box: TitledBox
@@ -139,8 +140,34 @@ class GameScreen(Screen, IView):
         """Show a 3-2-1 countdown overlay then start a new game."""
         self._show_countdown(self.restart)
 
+    def begin(self) -> None:
+        """Reset the model and start the gravity timer.
+
+        The timer lives in the view because Kivy's ``Clock`` is the single
+        UI-thread clock; the model itself stays free of real-time concerns.
+        """
+        self._model.start()
+        self._schedule_next_tick()
+
+    def end(self) -> None:
+        """Stop the gravity timer. The model state is preserved."""
+        self._cancel_tick()
+
+    def _schedule_next_tick(self) -> None:
+        self._tick_event = Clock.schedule_once(self._on_tick, self._model.tick_interval)
+
+    def _on_tick(self, dt: float) -> None:
+        self._model.tick()
+        if not self._model.is_game_over:
+            self._schedule_next_tick()
+
+    def _cancel_tick(self) -> None:
+        if self._tick_event is not None:
+            self._tick_event.cancel()
+            self._tick_event = None
+
     def _restart(self) -> None:
-        self._model.play()
+        self.begin()
         self._update_hold_preview()
         self._lbl_score.text = str(self._model.score)
         self._lbl_level.text = str(self._model.level)
@@ -450,7 +477,7 @@ class GameScreen(Screen, IView):
             self.remove_widget(self._quit_overlay)
             self._quit_overlay = None
         if self._model.is_running:
-            self._model.stop()
+            self.end()
         if self._on_back_to_menu is not None:
             self._on_back_to_menu()
 
