@@ -14,8 +14,6 @@ class RoundedToggleButton(ToggleButton):
     def __init__(self, **kwargs: Any) -> None:
         color: Any = kwargs.pop('background_color', (0.5, 0.5, 0.5, 1.0))
         super().__init__(**kwargs)
-        self.background_normal = ''
-        self.background_down = ''
         self.background_color = (0, 0, 0, 0)
         with self.canvas.before:
             self._bg_color_instr: Color = Color(*color)

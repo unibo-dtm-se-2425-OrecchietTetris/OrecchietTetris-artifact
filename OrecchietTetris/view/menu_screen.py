@@ -20,11 +20,16 @@ _BUTTON_H = 52   # matches DialogOverlay._BUTTON_H
 _ICON_BTN_SIZE = 56  # transparent corner icon buttons
 
 _IC_PLAY = ""
-_IC_STAR = ""      # leaderboard
-_IC_GEAR = ""      # settings
-_IC_QUIT = ""      # exit
-_IC_VOL = ""       # volume_up
-_IC_MUTE = ""    # volume_off
+_IC_STAR = ""     # leaderboard
+_IC_GEAR = ""     # settings
+_IC_INFO = ""     # info
+_IC_QUIT = ""     # exit
+_IC_VOL = ""      # volume_up
+_IC_MUTE = ""     # volume_off
+_IC_ARROW_L = ""  # arrow_back
+_IC_ARROW_R = ""  # arrow_forward
+_IC_ARROW_D = ""  # arrow_downward
+_IC_ARROW_U = ""  # arrow_upward
 
 
 class MenuScreen(Screen, IView):
@@ -50,6 +55,7 @@ class MenuScreen(Screen, IView):
         self._on_leaderboard = on_leaderboard
         self._audio = audio
         self._settings_overlay: Optional[DialogOverlay] = None
+        self._controls_overlay: Optional[DialogOverlay] = None
         self._btn_volume: Optional[RoundedButton] = None
         self._slider_volume: Optional[Slider] = None
         self._pre_mute_volume: float = 0.5
@@ -116,7 +122,6 @@ class MenuScreen(Screen, IView):
 
         self.add_widget(root)
 
-        # Settings gear — top-right corner, transparent
         self._btn_settings = RoundedButton(
             text=_IC_GEAR,
             font_name="MaterialIcons",
@@ -124,15 +129,25 @@ class MenuScreen(Screen, IView):
             size_hint=(None, None),
             size=(_ICON_BTN_SIZE, _ICON_BTN_SIZE),
             pos_hint={"right": 0.98, "top": 0.98},
-            background_normal="",
-            background_down="",
             background_color=(0, 0, 0, 0),
             color=(0.75, 0.75, 0.75, 1),
         )
         self._btn_settings.bind(on_release=self._open_settings)
         self.add_widget(self._btn_settings)
 
-        # Quit — bottom-left corner, transparent
+        self._btn_info = RoundedButton(
+            text=_IC_INFO,
+            font_name="MaterialIcons",
+            font_size="40sp",
+            size_hint=(None, None),
+            size=(_ICON_BTN_SIZE, _ICON_BTN_SIZE),
+            pos_hint={"x": 0.02, "top": 0.98},
+            background_color=(0, 0, 0, 0),
+            color=(0.75, 0.75, 0.75, 1),
+        )
+        self._btn_info.bind(on_release=self._open_controls)
+        self.add_widget(self._btn_info)
+
         self._btn_quit = RoundedButton(
             text=_IC_QUIT,
             font_name="MaterialIcons",
@@ -140,8 +155,6 @@ class MenuScreen(Screen, IView):
             size_hint=(None, None),
             size=(_ICON_BTN_SIZE, _ICON_BTN_SIZE),
             pos_hint={"x": 0.02, "y": 0.02},
-            background_normal="",
-            background_down="",
             background_color=(0, 0, 0, 0),
             color=(0.75, 0.2, 0.2, 1),
         )
@@ -149,6 +162,7 @@ class MenuScreen(Screen, IView):
         self.add_widget(self._btn_quit)
 
         self._build_settings_overlay()
+        self._build_controls_overlay()
 
     def _build_settings_overlay(self) -> None:
         dlg = DialogOverlay(title=i18n.t("settings"))
@@ -201,8 +215,6 @@ class MenuScreen(Screen, IView):
                 font_size="22sp",
                 color=(0.8, 0.8, 0.8, 1),
                 size_hint=(0.15, 1),
-                background_normal="",
-                background_down="",
                 background_color=(0, 0, 0, 0),
             )
             self._btn_volume.bind(on_release=self._toggle_mute)
@@ -233,6 +245,45 @@ class MenuScreen(Screen, IView):
     def _close_settings(self, *_args: Any) -> None:
         if self._settings_overlay is not None:
             self.remove_widget(self._settings_overlay)
+
+    def _build_controls_overlay(self) -> None:
+        dlg = DialogOverlay(title=i18n.t("controls"))
+        ic = "[font=MaterialIcons]{}[/font]"
+        rows = (
+            (f"{ic.format(_IC_ARROW_L)} / {ic.format(_IC_ARROW_R)}", i18n.t("move_lr")),
+            (ic.format(_IC_ARROW_D), i18n.t("soft_drop")),
+            (f"{ic.format(_IC_ARROW_U)} / X", i18n.t("rotate")),
+            ("Space", i18n.t("hard_drop")),
+            ("C", i18n.t("hold")),
+            ("P / Esc", i18n.t("pause_resume")),
+            ("Q", i18n.t("quit")),
+            ("M", i18n.t("toggle_music")),
+            ("N", i18n.t("next_track")),
+            ("B", i18n.t("prev_track")),
+        )
+        self._controls_labels = [
+            dlg.add_label(
+                text=f"{key}   —   {action}",
+                font_size="16sp",
+                color=(0.85, 0.85, 0.85, 1),
+                markup=True,
+            )
+            for key, action in rows
+        ]
+        dlg.add_button(
+            text="Close",
+            bg=(0.4, 0.4, 0.4, 1),
+            on_release=self._close_controls,
+        )
+        self._controls_overlay = dlg
+
+    def _open_controls(self, *_args: Any) -> None:
+        if self._controls_overlay is not None:
+            self.add_widget(self._controls_overlay)
+
+    def _close_controls(self, *_args: Any) -> None:
+        if self._controls_overlay is not None:
+            self.remove_widget(self._controls_overlay)
 
     def _on_volume_change(self, _slider: Any, value: float) -> None:
         if self._audio is not None:
@@ -272,3 +323,4 @@ class MenuScreen(Screen, IView):
         self._btn_new_game.text = f"[font=MaterialIcons]{_IC_PLAY}[/font]  {i18n.t('new_game')}"
         self._btn_leaderboard.text = f"[font=MaterialIcons]{_IC_STAR}[/font]  {i18n.t('leaderboard')}"
         self._lang_label.text = i18n.t("language") + ":"
+        self._build_controls_overlay()

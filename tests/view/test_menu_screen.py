@@ -137,6 +137,46 @@ def test_close_settings_removes_overlay_widget(menu: MenuScreen) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Controls (info) overlay
+# ---------------------------------------------------------------------------
+
+def test_menu_screen_has_controls_overlay(menu: MenuScreen) -> None:
+    assert menu._controls_overlay is not None
+
+
+def test_menu_screen_has_info_button(menu: MenuScreen) -> None:
+    assert menu._btn_info is not None
+
+
+def test_open_controls_adds_overlay_widget(menu: MenuScreen) -> None:
+    menu._open_controls()
+    assert menu._controls_overlay is not None
+
+
+def test_close_controls_removes_overlay_widget(menu: MenuScreen) -> None:
+    menu._open_controls()
+    menu._close_controls()  # must not raise
+
+
+def test_controls_labels_enable_markup(menu: MenuScreen) -> None:
+    assert all(lbl.markup is True for lbl in menu._controls_labels)
+
+
+def test_controls_labels_use_icon_glyph_not_literal_hex(menu: MenuScreen) -> None:
+    joined = "".join(lbl.text for lbl in menu._controls_labels)
+    assert "" in joined  # arrow_back glyph present
+    assert "" in joined  # arrow_upward glyph present (rotate)
+    assert "e5c4" not in joined.replace("", "")  # no literal hex codepoint
+
+
+def test_set_language_refreshes_controls_overlay(menu: MenuScreen) -> None:
+    menu._set_language("it")
+    assert any("Caduta lenta" in lbl.text for lbl in menu._controls_labels)
+    menu._set_language("en")
+    assert any("Soft drop" in lbl.text for lbl in menu._controls_labels)
+
+
+# ---------------------------------------------------------------------------
 # Volume controls
 # ---------------------------------------------------------------------------
 

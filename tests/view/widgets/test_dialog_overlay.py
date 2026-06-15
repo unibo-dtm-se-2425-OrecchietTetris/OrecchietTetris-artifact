@@ -71,6 +71,16 @@ def test_add_label_grows_card_by_label_height(overlay_no_title: DialogOverlay) -
     assert overlay_no_title._card.height == before + _LABEL_H
 
 
+def test_add_label_defaults_to_no_markup(overlay_no_title: DialogOverlay) -> None:
+    lbl = overlay_no_title.add_label("plain")
+    assert lbl.markup is False
+
+
+def test_add_label_markup_passed_to_label(overlay_no_title: DialogOverlay) -> None:
+    lbl = overlay_no_title.add_label("[font=MaterialIcons]x[/font]", markup=True)
+    assert lbl.markup is True
+
+
 # ---------------------------------------------------------------------------
 # add_generic_widget — lines 115-116
 # ---------------------------------------------------------------------------

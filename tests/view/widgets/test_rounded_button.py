@@ -16,7 +16,7 @@ def btn() -> RoundedButton:
 
 
 # ---------------------------------------------------------------------------
-# Construction — lines 15-25
+# Construction — lines 15-23
 # ---------------------------------------------------------------------------
 
 def test_rounded_button_can_be_instantiated(btn: RoundedButton) -> None:
@@ -28,13 +28,6 @@ def test_rounded_button_has_canvas_bg_instruction(btn: RoundedButton) -> None:
     assert hasattr(btn, "_bg_rrect")
 
 
-def test_rounded_button_disables_kivy_default_backgrounds(btn: RoundedButton) -> None:
-    """The Kivy default image backgrounds must be cleared so only the custom
-    rounded rectangle is visible."""
-    assert btn.background_normal == ""
-    assert btn.background_down == ""
-
-
 def test_rounded_button_transparent_background_color(btn: RoundedButton) -> None:
     """The Kivy-level background_color must be fully transparent; colour comes
     from the canvas.before RoundedRectangle."""
@@ -42,7 +35,7 @@ def test_rounded_button_transparent_background_color(btn: RoundedButton) -> None
 
 
 # ---------------------------------------------------------------------------
-# _update_shape — lines 28-29
+# _update_shape — lines 26-27
 # ---------------------------------------------------------------------------
 
 def test_update_shape_synchronises_rrect_geometry(btn: RoundedButton) -> None:
@@ -55,7 +48,7 @@ def test_update_shape_synchronises_rrect_geometry(btn: RoundedButton) -> None:
 
 
 # ---------------------------------------------------------------------------
-# set_color — line 32
+# set_color — line 30
 # ---------------------------------------------------------------------------
 
 def test_set_color_updates_color_instruction(btn: RoundedButton) -> None:

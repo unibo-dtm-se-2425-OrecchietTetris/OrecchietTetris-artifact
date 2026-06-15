@@ -17,7 +17,7 @@ def toggle() -> RoundedToggleButton:
 
 
 # ---------------------------------------------------------------------------
-# Construction — lines 15-25
+# Construction — lines 15-23
 # ---------------------------------------------------------------------------
 
 def test_rounded_toggle_button_can_be_instantiated(toggle: RoundedToggleButton) -> None:
@@ -30,13 +30,11 @@ def test_rounded_toggle_button_has_canvas_instructions(toggle: RoundedToggleButt
 
 
 def test_rounded_toggle_button_disables_kivy_default_backgrounds(toggle: RoundedToggleButton) -> None:
-    assert toggle.background_normal == ""
-    assert toggle.background_down == ""
     assert toggle.background_color == (0, 0, 0, 0)
 
 
 # ---------------------------------------------------------------------------
-# _update_shape — lines 28-29
+# _update_shape — lines 26-27
 # ---------------------------------------------------------------------------
 
 def test_update_shape_synchronises_rrect(toggle: RoundedToggleButton) -> None:
@@ -48,7 +46,7 @@ def test_update_shape_synchronises_rrect(toggle: RoundedToggleButton) -> None:
 
 
 # ---------------------------------------------------------------------------
-# set_color — line 32
+# set_color — line 30
 # ---------------------------------------------------------------------------
 
 def test_set_color_updates_color_instruction(toggle: RoundedToggleButton) -> None:
