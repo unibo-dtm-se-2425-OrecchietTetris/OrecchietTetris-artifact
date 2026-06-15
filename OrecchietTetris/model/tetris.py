@@ -216,8 +216,7 @@ class Tetris(ITetris):
     def _try_move(self, new_row: int, new_col: int) -> bool:
         if not self.is_running:
             return False
-        piece = self._board.current_piece
-        if piece is None:
+        if self._board.current_piece is None:
             return False
         is_valid_move = self._board.move_falling_piece(new_row, new_col)
         if is_valid_move:

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import csv
 from pathlib import Path
-from typing import ClassVar, Optional
+from typing import Optional
 
 from OrecchietTetris.leaderboard.leaderboard_entry import LeaderboardEntry
 from OrecchietTetris.leaderboard.interfaces.ileaderboard_repository import ILeaderboardRepository
@@ -12,21 +12,11 @@ _CSV_FIELDS = ("name", "score", "level", "lines")
 
 
 class CsvLeaderboardRepository(ILeaderboardRepository):
-    """Singleton repository that persists leaderboard entries to a CSV file."""
-
-    _instance: ClassVar[Optional[CsvLeaderboardRepository]] = None
-
-    def __new__(cls, path: Optional[Path] = None) -> CsvLeaderboardRepository:
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance
+    """Repository that persists leaderboard entries to a CSV file."""
 
     def __init__(self, path: Optional[Path] = None) -> None:
-        if hasattr(self, "_initialized"):
-            return
         self._path: Path = path if path is not None else ASSETS_DIR / "lb" / "leaderboard.csv"
         self._path.parent.mkdir(parents=True, exist_ok=True)
-        self._initialized: bool = True
 
     def save(self, entry: LeaderboardEntry) -> None:
         write_header = not self._path.exists() or self._path.stat().st_size == 0

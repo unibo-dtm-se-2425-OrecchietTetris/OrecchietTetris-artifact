@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, ClassVar, Optional
+from typing import Any, Optional
 
 from OrecchietTetris.audio.interfaces.iaudio_controller import IAudioController
 from OrecchietTetris.utils.paths import MUSIC_DIR
@@ -10,23 +10,14 @@ _EXTENSIONS = {".ogg", ".wav"}
 
 
 class KivyAudioController(IAudioController):
-    """Singleton audio controller backed by Kivy's SoundLoader.
+    """Audio controller backed by Kivy's SoundLoader.
 
     Discovers all audio files in MUSIC_DIR and plays them as a looping queue.
     stop() mutes playback and saves volume; play() restores it.
     Gracefully handles missing/unloadable files — all methods become no-ops.
     """
 
-    _instance: ClassVar[Optional[KivyAudioController]] = None
-
-    def __new__(cls, music_path: Optional[Path] = None) -> KivyAudioController:
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance
-
     def __init__(self, music_path: Optional[Path] = None) -> None:
-        if hasattr(self, "_initialized"):
-            return
         self._volume: float = 0.5
         self._saved_volume: float = 0.5
         self._queue: list[Any] = []
@@ -39,8 +30,6 @@ class KivyAudioController(IAudioController):
         for sound in self._queue:
             sound.volume = self._volume
             sound.bind(on_stop=self._on_track_end)
-
-        self._initialized: bool = True
 
     # ------------------------------------------------------------------
     # IAudioController
