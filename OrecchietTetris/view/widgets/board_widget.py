@@ -7,12 +7,13 @@ from kivy.uix.gridlayout import GridLayout  # type: ignore[import-untyped]
 from kivy.graphics import Color, RoundedRectangle  # type: ignore[import-untyped]
 from kivy.clock import Clock  # type: ignore[import-untyped]
 
-from OrecchietTetris.view.block_renderer import BlockRenderer, EMPTY_COLOUR
+from OrecchietTetris.model.board import ROWS, COLS
+from OrecchietTetris.view.block_renderer import BlockRenderer, EMPTY_COLOUR, SHADOW_COLOUR
 from OrecchietTetris.view.widgets.cell import Cell
 from OrecchietTetris.model.interfaces import ITetromino
 
-BOARD_ROWS: int = 20
-BOARD_COLS: int = 10
+BOARD_ROWS: int = ROWS
+BOARD_COLS: int = COLS
 BOARD_PADDING: int = 12
 
 
@@ -37,6 +38,7 @@ class BoardWidget(AnchorLayout):
         self._padding = padding
         self._renderer = renderer
         self._animating = False
+        self.on_line_clear_animation_done: Optional[Callable[[], None]] = None
 
         board_w = cols * cell_size + (cols - 1)
         board_h = rows * cell_size + (rows - 1)
@@ -127,7 +129,7 @@ class BoardWidget(AnchorLayout):
                 if cell_val != 0:
                     self._render_cell(r, c, cell_val)
                 elif (r, c) in shadow_cells:
-                    self._board_cells[r][c].set_colour(self._renderer.shadow_colour())
+                    self._board_cells[r][c].set_colour(SHADOW_COLOUR)
                 else:
                     self._board_cells[r][c].set_colour(EMPTY_COLOUR)
 
@@ -135,15 +137,14 @@ class BoardWidget(AnchorLayout):
         self,
         rows: list[int],
         snapshot: list[list[int]],
-        on_done: Optional[Callable[[], None]] = None,
     ) -> None:
         """Flash cleared rows white one-by-one, then animate remaining rows dropping.
 
         Sets is_animating=True on entry and False after drop completes.
-        Calls on_done() when fully finished.
+        Calls on_line_clear_animation_done() when fully finished.
         """
         self._animating = True
-        self._animate_flash(rows, snapshot, 0, on_done)
+        self._animate_flash(rows, snapshot, 0)
 
     def resize(self, cell_size: float) -> None:
         """Resize board grid and container for a new cell_size."""
@@ -161,38 +162,35 @@ class BoardWidget(AnchorLayout):
         if tex is not None:
             self._board_cells[row][col].set_texture(tex)
         else:
-            self._board_cells[row][col].set_colour(self._renderer.colour(val))
+            self._board_cells[row][col].set_colour(EMPTY_COLOUR)
 
     def _animate_flash(
         self,
         rows: list[int],
         snapshot: list[list[int]],
         idx: int,
-        on_done: Optional[Callable[[], None]],
     ) -> None:
         if idx < len(rows):
             for c in range(self._cols):
                 self._board_cells[rows[idx]][c].set_colour((0.8, 0.8, 0.85, 1.0))
             Clock.schedule_once(
-                lambda _dt, i=idx: self._animate_flash(rows, snapshot, i + 1, on_done),
+                lambda _dt, i=idx: self._animate_flash(rows, snapshot, i + 1),
                 0.1,
             )
         else:
-            self._animate_drop(rows, snapshot, 0, on_done)
+            self._animate_drop(rows, snapshot, 0)
 
     def _animate_drop(
         self,
         rows: list[int],
         snapshot: list[list[int]],
         step: int,
-        on_done: Optional[Callable[[], None]],
     ) -> None:
         cleared_set: set[int] = set(rows)
-        empty = EMPTY_COLOUR
 
         for r in range(self._rows):
             for c in range(self._cols):
-                self._board_cells[r][c].set_colour(empty)
+                self._board_cells[r][c].set_colour(EMPTY_COLOUR)
 
         for r in range(self._rows):
             if r in cleared_set:
@@ -207,10 +205,10 @@ class BoardWidget(AnchorLayout):
 
         if step < len(rows):
             Clock.schedule_once(
-                lambda *_: self._animate_drop(rows, snapshot, step + 1, on_done),
+                lambda *_: self._animate_drop(rows, snapshot, step + 1),
                 0.1,
             )
         else:
             self._animating = False
-            if on_done is not None:
-                on_done()
+            if self.on_line_clear_animation_done is not None:
+                self.on_line_clear_animation_done()

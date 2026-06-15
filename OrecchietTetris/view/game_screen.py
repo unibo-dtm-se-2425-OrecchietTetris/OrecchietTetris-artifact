@@ -248,16 +248,7 @@ class GameScreen(Screen, IView):
                 [pre_clear_grid[r][c] for c in range(BOARD_COLS)]
                 for r in range(BOARD_ROWS)
             ]
-            self._board.animate_line_clear(
-                rows,
-                snapshot,
-                on_done=lambda: self._board.redraw(
-                    self._model.board.grid,
-                    self._model.shadow_row,
-                    self._model.current_piece,
-                    self._model.current_col,
-                ),
-            )
+            self._board.animate_line_clear(rows, snapshot)
         elif event_type == EventType.SCORE_UPDATED:
             self._lbl_score.text = str(self._model.score)
             self._lbl_level.text = str(self._model.level)
@@ -515,6 +506,12 @@ class GameScreen(Screen, IView):
             cols=BOARD_COLS,
             cell_size=cell_size,
             padding=BOARD_PADDING,
+        )
+        self._board.on_line_clear_animation_done = lambda: self._board.redraw(
+            self._model.board.grid,
+            self._model.shadow_row,
+            self._model.current_piece,
+            self._model.current_col,
         )
         cw, ch = self._board.container_size
         root = BoxLayout(

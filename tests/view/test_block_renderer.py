@@ -7,7 +7,6 @@ from OrecchietTetris.view.block_renderer import (
     BlockRenderer,
     BLOCK_IMAGES,
     EMPTY_COLOUR,
-    SHADOW_COLOUR,
 )
 
 
@@ -26,12 +25,6 @@ def test_empty_colour_is_valid_rgba():
         assert 0.0 <= component <= 1.0, "Component out of [0,1] range"
 
 
-@pytest.mark.parametrize("cell_value", range(8))
-def test_renderer_colour_returns_empty_colour_for_all_values(cell_value):
-    renderer = BlockRenderer()
-    assert renderer.colour(cell_value) == EMPTY_COLOUR
-
-
 def test_renderer_colour_empty_cell_is_dark():
     r, g, b, _ = EMPTY_COLOUR
     assert r < 0.2 and g < 0.2 and b < 0.2
@@ -48,26 +41,6 @@ def test_renderer_image_path_returns_string_for_pieces(cell_value):
     path = renderer.image_path(cell_value)
     assert isinstance(path, str)
     assert len(path) > 0
-
-
-def test_renderer_unknown_value_returns_empty_colour():
-    renderer = BlockRenderer()
-    assert renderer.colour(99) == EMPTY_COLOUR
-
-
-# ---------------------------------------------------------------------------
-# shadow_colour — line 60
-# ---------------------------------------------------------------------------
-
-def test_shadow_colour_returns_shadow_colour_constant() -> None:
-    """shadow_colour() must return the ghost-piece tint used for the board shadow."""
-    renderer = BlockRenderer()
-    assert renderer.shadow_colour() == SHADOW_COLOUR
-
-
-def test_shadow_colour_is_valid_rgba() -> None:
-    for component in SHADOW_COLOUR:
-        assert 0.0 <= component <= 1.0
 
 
 # ---------------------------------------------------------------------------

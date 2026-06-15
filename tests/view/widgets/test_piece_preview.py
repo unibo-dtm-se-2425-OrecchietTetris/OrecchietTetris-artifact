@@ -135,7 +135,7 @@ def test_set_piece_greyed_without_texture_dims_colour(preview: PiecePreview) -> 
     mocked_cells = [[MagicMock() for _ in range(6)] for _ in range(6)]
     p._cells = mocked_cells
 
-    base_rgba = renderer.colour(5)  # EMPTY_COLOUR
+    base_rgba = EMPTY_COLOUR
     p.set_piece(shape, greyed=True)
 
     row_off = (6 - 1) // 2

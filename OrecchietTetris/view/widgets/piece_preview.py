@@ -63,7 +63,7 @@ class PiecePreview(Widget):
                     if tex is not None:
                         self._cells[pr][pc].set_texture(tex, alpha=0.35 if greyed else 1.0)
                     else:
-                        rgba = self._renderer.colour(val)
+                        rgba = EMPTY_COLOUR
                         if greyed:
                             rgba = (rgba[0] * 0.4, rgba[1] * 0.4, rgba[2] * 0.4, 0.6)
                         self._cells[pr][pc].set_colour(rgba)

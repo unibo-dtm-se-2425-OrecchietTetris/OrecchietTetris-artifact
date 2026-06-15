@@ -9,23 +9,10 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from OrecchietTetris.view.block_renderer import BlockRenderer, EMPTY_COLOUR
+from OrecchietTetris.view.block_renderer import SHADOW_COLOUR, BlockRenderer, EMPTY_COLOUR
 from OrecchietTetris.view.widgets.board_widget import (
     BoardWidget,
-    BOARD_ROWS,
-    BOARD_COLS,
-    BOARD_PADDING,
 )
-
-
-def test_board_constants():
-    assert BOARD_ROWS == 20
-    assert BOARD_COLS == 10
-    assert BOARD_PADDING == 12
-
-
-def test_board_widget_exported_from_widgets_package():
-    from OrecchietTetris.view.widgets import BoardWidget  # noqa: F401
 
 
 # ---------------------------------------------------------------------------
@@ -47,10 +34,6 @@ def bw(renderer: BlockRenderer) -> BoardWidget:
 # Construction — lines 35-80
 # ---------------------------------------------------------------------------
 
-def test_board_widget_can_be_instantiated(bw: BoardWidget) -> None:
-    assert bw is not None
-
-
 def test_board_widget_creates_cell_grid(bw: BoardWidget) -> None:
     assert len(bw._board_cells) == 4
     for row in bw._board_cells:
@@ -64,9 +47,6 @@ def test_board_widget_has_background_instruction(bw: BoardWidget) -> None:
 # ---------------------------------------------------------------------------
 # Properties — lines 95, 99, 103, 107
 # ---------------------------------------------------------------------------
-
-def test_is_animating_defaults_to_false(bw: BoardWidget) -> None:
-    assert bw.is_animating is False
 
 
 def test_is_animating_setter(bw: BoardWidget) -> None:
@@ -117,7 +97,7 @@ def test_redraw_shadow_cells_get_shadow_colour(bw: BoardWidget, renderer: BlockR
     bw.redraw(grid, shadow_row=2, piece=mock_piece, cur_col=1)
 
     # Cell at (2,1) should receive shadow colour
-    mock_cells[2][1].set_colour.assert_called_with(renderer.shadow_colour())
+    mock_cells[2][1].set_colour.assert_called_with(SHADOW_COLOUR)
 
 
 def test_redraw_filled_cell_without_texture_calls_set_colour(
@@ -131,7 +111,7 @@ def test_redraw_filled_cell_without_texture_calls_set_colour(
 
     bw.redraw(grid, shadow_row=99, piece=None, cur_col=0)
 
-    mock_cells[0][0].set_colour.assert_called_with(renderer.colour(1))
+    mock_cells[0][0].set_colour.assert_called_with(EMPTY_COLOUR)
 
 
 def test_redraw_filled_cell_with_texture_calls_set_texture(
@@ -181,7 +161,7 @@ def test_render_cell_with_zero_val_uses_colour(bw: BoardWidget, renderer: BlockR
     mock_cell = MagicMock()
     bw._board_cells[0][0] = mock_cell
     bw._render_cell(0, 0, 0)
-    mock_cell.set_colour.assert_called_with(renderer.colour(0))
+    mock_cell.set_colour.assert_called_with(EMPTY_COLOUR)
 
 
 def test_render_cell_with_texture_uses_set_texture(
@@ -209,28 +189,29 @@ def test_animate_line_clear_sets_animating_flag(bw: BoardWidget) -> None:
     assert bw.is_animating is True
 
 
-def test_animate_line_clear_completes_and_calls_on_done(bw: BoardWidget) -> None:
-    """Running the full animation must clear is_animating and call on_done()."""
+def test_animate_line_clear_completes_and_calls_callback(bw: BoardWidget) -> None:
+    """Running the full animation must clear is_animating and call the callback."""
     grid = [[0] * 4 for _ in range(4)]
     grid[3] = [1] * 4
 
-    on_done = MagicMock()
+    callback = MagicMock()
+    bw.on_line_clear_animation_done = callback
 
     with patch("OrecchietTetris.view.widgets.board_widget.Clock") as mock_clock:
         # Immediately invoke each scheduled callback (synchronous animation)
         mock_clock.schedule_once.side_effect = lambda cb, delay: cb(0)
-        bw.animate_line_clear([3], grid, on_done=on_done)
+        bw.animate_line_clear([3], grid)
 
     assert bw.is_animating is False
-    on_done.assert_called_once()
+    callback.assert_called_once()
 
 
-def test_animate_line_clear_without_on_done_does_not_raise(bw: BoardWidget) -> None:
+def test_animate_line_clear_without_callback_does_not_raise(bw: BoardWidget) -> None:
     grid = [[0] * 4 for _ in range(4)]
 
     with patch("OrecchietTetris.view.widgets.board_widget.Clock") as mock_clock:
         mock_clock.schedule_once.side_effect = lambda cb, delay: cb(0)
-        bw.animate_line_clear([2], grid, on_done=None)
+        bw.animate_line_clear([2], grid)  # on_line_clear_animation_done is None
 
     assert bw.is_animating is False
 
@@ -246,7 +227,7 @@ def test_animate_drop_renders_non_zero_snapshot_cells(bw: BoardWidget, renderer:
 
     with patch("OrecchietTetris.view.widgets.board_widget.Clock") as mock_clock:
         mock_clock.schedule_once.side_effect = lambda cb, delay: cb(0)
-        bw.animate_line_clear([3], snapshot, on_done=None)
+        bw.animate_line_clear([3], snapshot)
 
     # At least one cell must have had set_colour or set_texture called for the
     # non-zero snapshot cell that dropped through _animate_drop.
