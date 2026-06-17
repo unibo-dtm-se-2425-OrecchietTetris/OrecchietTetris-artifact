@@ -1,3 +1,21 @@
+# [0.11.0](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.10.0...v0.11.0) (2026-06-17)
+
+
+### Bug Fixes
+
+* add controls dialog ([9dd4480](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/9dd4480c583967c1cdf0ddd52278dec28a39d9d5))
+
+
+### Features
+
+* **audio:** add prev/next keyboard control ([612f166](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/612f166584b1aecfd2f081a5238db186167a37cc))
+
+
+### Performance Improvements
+
+* improve use of constants, remove useless methods and tests, improve code readability ([f299cc4](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/f299cc4e32eaa881f27d27f71a5454655ac2be7b))
+* move gravity tick handling in game_screen from tetris model ([1c7ed16](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/1c7ed16b9827c5e087d15c82d6fac4bddc220d9e))
+
 # [0.10.0](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.9.3...v0.10.0) (2026-06-07)
 
 
