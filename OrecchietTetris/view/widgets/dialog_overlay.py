@@ -10,7 +10,7 @@ from kivy.graphics import Color, Rectangle, RoundedRectangle, Line  # type: igno
 
 from OrecchietTetris.view.widgets.rounded_button import RoundedButton
 
-_CARD_WIDTH = 340
+_CARD_WIDTH = 500
 _CARD_PADDING = 24
 _CARD_SPACING = 14
 _LABEL_H = 46
@@ -96,11 +96,13 @@ class DialogOverlay(FloatLayout):
         text: str,
         font_size: str = "22sp",
         color: tuple[float, float, float, float] = (1, 1, 1, 1),
+        markup: bool = False,
     ) -> Label:
         lbl = Label(
             text=text,
             font_size=font_size,
             color=color,
+            markup=markup,
             size_hint=(1, None),
             height=_LABEL_H,
             halign="center",

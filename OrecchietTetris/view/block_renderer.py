@@ -51,14 +51,6 @@ class BlockRenderer:
         """Return the preloaded Kivy texture for *cell_value*, or *None*."""
         return self._textures.get(cell_value)
 
-    def colour(self, _cell_value: int) -> tuple[float, float, float, float]:
-        """Return the RGBA 4-tuple for any cell (always the empty-cell colour)."""
-        return EMPTY_COLOUR
-
-    def shadow_colour(self) -> tuple[float, float, float, float]:
-        """Return the RGBA colour used for shadow (ghost piece) cells."""
-        return SHADOW_COLOUR
-
     def image_path(self, cell_value: int) -> Optional[str]:
         """Return the asset path for *cell_value*, or *None* for empty cells."""
         return BLOCK_IMAGES.get(cell_value)

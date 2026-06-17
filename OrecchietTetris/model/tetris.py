@@ -1,4 +1,3 @@
-import threading
 from typing import Optional
 
 from OrecchietTetris.model.interfaces import ITetris, IBoard, ITetromino, ITetrominoFactory
@@ -28,8 +27,6 @@ class Tetris(ITetris):
         self._running: bool = False
         self._paused: bool = False
         self._game_over: bool = False
-        self._stop_event: threading.Event = threading.Event()
-        self._game_thread: Optional[threading.Thread] = None
 
     # ------------------------------------------------------------------ #
     # Read-only properties                                                 #
@@ -139,44 +136,6 @@ class Tetris(ITetris):
         """Seconds between automatic gravity ticks at the current level."""
         return (0.8 - ((self._level - 1) * 0.007))**(self._level - 1)
 
-    def play(self) -> None:
-        """Start a fresh game and launch the automatic tick loop.
-
-        Stops any existing loop, resets the game via ``start()``, then spawns
-        a daemon thread that calls ``tick()`` every ``tick_interval`` seconds.
-        """
-        if self._game_thread is not None and self._game_thread.is_alive():
-            self.stop()
-        self.start()
-        self._stop_event.clear()
-        self._game_thread = threading.Thread(target=self._game_loop, daemon=True)
-        self._game_thread.start()
-
-    def stop(self) -> None:
-        """Stop the automatic tick loop. The game state is preserved.
-
-        Signals the background thread to exit and blocks until it finishes
-        (up to 2 s). Safe to call even when no loop is running.
-        """
-        self._stop_event.set()
-        if self._game_thread is not None:
-            self._game_thread.join(timeout=2.0)
-            self._game_thread = None
-        self._paused = False
-
-    def _game_loop(self) -> None:
-        """Background thread body: sleeps for ``tick_interval`` then calls ``tick()``.
-
-        Exits when the stop event is set or the game ends naturally.
-        Uses ``Event.wait`` instead of ``time.sleep`` so that ``stop()``
-        interrupts the sleep immediately.
-        """
-        while not self._stop_event.is_set() and not self._game_over:
-            interrupted = self._stop_event.wait(timeout=self.tick_interval)
-            if interrupted:
-                break
-            self.tick()
-
     # ------------------------------------------------------------------ #
     # Player actions                                                       #
     # ------------------------------------------------------------------ #
@@ -257,8 +216,7 @@ class Tetris(ITetris):
     def _try_move(self, new_row: int, new_col: int) -> bool:
         if not self.is_running:
             return False
-        piece = self._board.current_piece
-        if piece is None:
+        if self._board.current_piece is None:
             return False
         is_valid_move = self._board.move_falling_piece(new_row, new_col)
         if is_valid_move:

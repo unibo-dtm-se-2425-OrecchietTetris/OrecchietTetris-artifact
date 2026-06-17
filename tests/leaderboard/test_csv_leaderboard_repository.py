@@ -1,20 +1,10 @@
 from __future__ import annotations
 
-from typing import Any, Generator
-
 import pytest
 from pathlib import Path
 
 from OrecchietTetris.leaderboard.csv_leaderboard_repository import CsvLeaderboardRepository
 from OrecchietTetris.leaderboard.leaderboard_entry import LeaderboardEntry
-
-
-@pytest.fixture(autouse=True)
-def reset_singleton() -> Generator[None, Any, None]:
-    """Reset the singleton between tests so each test gets a fresh instance."""
-    CsvLeaderboardRepository._instance = None
-    yield
-    CsvLeaderboardRepository._instance = None
 
 
 @pytest.fixture
@@ -50,11 +40,11 @@ def test_multiple_saves_accumulate(repo: CsvLeaderboardRepository) -> None:
     assert len(repo.load_all()) == 3
 
 
-def test_singleton_returns_same_instance(tmp_path: Path) -> None:
+def test_each_construction_returns_distinct_instance(tmp_path: Path) -> None:
     path = tmp_path / "lb.csv"
     a = CsvLeaderboardRepository(path=path)
     b = CsvLeaderboardRepository(path=path)
-    assert a is b
+    assert a is not b
 
 
 def test_csv_file_created_on_first_save(tmp_path: Path) -> None:

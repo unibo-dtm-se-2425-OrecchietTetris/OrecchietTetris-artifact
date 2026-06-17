@@ -20,10 +20,10 @@ class TetrisApp(App):
     Screen flow
     -----------
     * Starts on **MenuScreen**.
-    * Pressing *New Game* switches to **GameScreen** and calls ``model.play()``.
+    * Pressing *New Game* switches to **GameScreen** and calls ``game.begin()``.
     * Pressing *Leaderboard* switches to **LeaderboardScreen**.
     * On game over or when the player presses *Back to Menu* the app returns to
-      **MenuScreen** and stops the model loop.
+      **MenuScreen** and ends the game-screen tick loop.
     """
 
     title = "OrecchietTetris"
@@ -42,7 +42,7 @@ class TetrisApp(App):
         i18n.set('fallback', 'en')
 
         self._model = Tetris()
-        self._repo = CsvLeaderboardRepository()
+        self._leaderboard_repo = CsvLeaderboardRepository()
         self._audio = KivyAudioController()
         self._audio.play()
 
@@ -57,13 +57,13 @@ class TetrisApp(App):
         self._game = GameScreen(
             model=self._model,
             audio=self._audio,
-            repository=self._repo,
+            repository=self._leaderboard_repo,
             on_back_to_menu=self._back_to_menu,
             on_name_saved=self._on_name_saved,
             name="game",
         )
         self._leaderboard = LeaderboardScreen(
-            repository=self._repo,
+            repository=self._leaderboard_repo,
             on_back=self._back_to_menu_from_leaderboard,
             name="leaderboard",
         )
@@ -83,11 +83,11 @@ class TetrisApp(App):
         self._game.show()
         self._menu.hide()
         self._sm.current = "game"
-        self._model.play()
+        self._game.begin()
 
     def _back_to_menu(self) -> None:
         """Stop the game loop and return to the main menu."""
-        self._model.stop()
+        self._game.end()
         self._game.hide()
         self._menu.show()
         self._sm.current = "menu"
