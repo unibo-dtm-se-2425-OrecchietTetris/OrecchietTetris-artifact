@@ -1,3 +1,10 @@
+## [0.11.1](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.11.0...v0.11.1) (2026-06-19)
+
+
+### Bug Fixes
+
+* could not load assets, store leaderboard in user data dir ([874b0b1](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/874b0b1af1aada5e2deae666380e946935696f25))
+
 # [0.11.0](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.10.0...v0.11.0) (2026-06-17)
 
 
