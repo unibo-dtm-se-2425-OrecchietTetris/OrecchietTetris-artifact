@@ -1,3 +1,10 @@
+## [0.11.2](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.11.1...v0.11.2) (2026-06-19)
+
+
+### Bug Fixes
+
+* pyyaml dep ([81fa0e3](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/81fa0e3a31ad9ae5edf2de81e1b0141597437494))
+
 ## [0.11.1](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.11.0...v0.11.1) (2026-06-19)
 
 
