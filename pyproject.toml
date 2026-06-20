@@ -27,7 +27,7 @@ python = ">= 3.11.0 < 4.0.0"
 poetry = ">= 2.3.4"
 python-i18n = "^0.3.9"
 pyyaml = "^6.0"
-kivy = "^2.3.1"
+kivy = { version = "^2.3.1", python = "<3.14" }
 platformdirs = "^4.3.6"
 
 [tool.poetry.group.dev.dependencies]
