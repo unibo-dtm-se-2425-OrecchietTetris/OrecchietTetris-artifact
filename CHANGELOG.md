@@ -1,3 +1,15 @@
+# [1.0.0](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.11.2...v1.0.0) (2026-06-20)
+
+
+### Bug Fixes
+
+* update tests for compatibility with python 3.14 ([a91705c](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/a91705c145976abd1f81d474d57d5a698e8ac95b))
+
+
+### BREAKING CHANGES
+
+* official release
+
 ## [0.11.2](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.11.1...v0.11.2) (2026-06-19)
 
 
