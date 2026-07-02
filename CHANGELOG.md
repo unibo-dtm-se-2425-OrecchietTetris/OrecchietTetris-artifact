@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v1.0.0...v1.1.0) (2026-07-02)
+
+
+### Features
+
+* **Audio:** rename Controller to Service ([0b4e2bb](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/0b4e2bb64048baf784d9720f87c0a5605b977bc3))
+
 # [1.0.0](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v0.11.2...v1.0.0) (2026-06-20)
 
 
