@@ -2,7 +2,7 @@
 
 MenuScreen is the main menu: logo, New Game / Leaderboard buttons, a settings
 gear and a quit button.  The settings overlay contains language toggles and an
-optional volume slider when an audio controller is provided.
+optional volume slider when an audio service is provided.
 """
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ from OrecchietTetris.utils import EventType
 
 @pytest.fixture()
 def menu() -> MenuScreen:
-    """MenuScreen without an audio controller."""
+    """MenuScreen without an audio service."""
     return MenuScreen(name="menu")
 
 
@@ -33,7 +33,7 @@ def audio() -> MagicMock:
 
 @pytest.fixture()
 def menu_with_audio(audio: MagicMock) -> MenuScreen:
-    """MenuScreen with a mock audio controller (shows volume slider)."""
+    """MenuScreen with a mock audio service (shows volume slider)."""
     return MenuScreen(
         on_new_game=MagicMock(),
         on_leaderboard=MagicMock(),

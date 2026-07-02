@@ -1,4 +1,4 @@
-from OrecchietTetris.audio.interfaces.iaudio_controller import IAudioController
-from OrecchietTetris.audio.kivy_audio_controller import KivyAudioController
+from OrecchietTetris.audio.interfaces.iaudio_service import IAudioService
+from OrecchietTetris.audio.kivy_audio_service import KivyAudioService
 
-__all__ = ["IAudioController", "KivyAudioController"]
+__all__ = ["IAudioService", "KivyAudioService"]

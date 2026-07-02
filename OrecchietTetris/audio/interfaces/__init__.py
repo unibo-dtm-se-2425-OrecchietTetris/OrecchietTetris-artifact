@@ -1,3 +1,3 @@
-from OrecchietTetris.audio.interfaces.iaudio_controller import IAudioController
+from OrecchietTetris.audio.interfaces.iaudio_service import IAudioService
 
-__all__ = ["IAudioController"]
+__all__ = ["IAudioService"]

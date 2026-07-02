@@ -16,7 +16,7 @@ from OrecchietTetris.utils import EventType
 from OrecchietTetris.utils.paths import ASSETS_DIR
 from OrecchietTetris.model.interfaces import ITetris
 from OrecchietTetris.view.interfaces import IView
-from OrecchietTetris.audio.interfaces import IAudioController
+from OrecchietTetris.audio.interfaces import IAudioService
 from OrecchietTetris.leaderboard.interfaces import ILeaderboardRepository
 from OrecchietTetris.leaderboard.leaderboard_entry import LeaderboardEntry
 import i18n  # type: ignore[import-untyped]
@@ -87,7 +87,7 @@ class GameScreen(Screen, IView):
         self,
         model: ITetris,
         repository: Optional[ILeaderboardRepository] = None,
-        audio: Optional[IAudioController] = None,
+        audio: Optional[IAudioService] = None,
         on_back_to_menu: Optional[Callable[[], None]] = None,
         on_name_saved: Optional[Callable[[str], None]] = None,
         **kwargs: Any,

@@ -13,7 +13,7 @@ from kivy.app import App  # type: ignore[import-untyped]
 from OrecchietTetris.utils import EventType
 from OrecchietTetris.utils.paths import ASSETS_DIR
 from OrecchietTetris.view.interfaces import IView
-from OrecchietTetris.audio.interfaces import IAudioController
+from OrecchietTetris.audio.interfaces import IAudioService
 from OrecchietTetris.view.widgets import RoundedButton, RoundedToggleButton, DialogOverlay
 
 _BUTTON_H = 52   # matches DialogOverlay._BUTTON_H
@@ -40,14 +40,14 @@ class MenuScreen(Screen, IView):
     on_new_game:
         Called (no arguments) when the player presses *New Game*.
     audio:
-        Optional audio controller; exposes a volume slider when provided.
+        Optional audio service; exposes a volume slider when provided.
     """
 
     def __init__(
         self,
         on_new_game: Optional[Callable[[], None]] = None,
         on_leaderboard: Optional[Callable[[], None]] = None,
-        audio: Optional[IAudioController] = None,
+        audio: Optional[IAudioService] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
