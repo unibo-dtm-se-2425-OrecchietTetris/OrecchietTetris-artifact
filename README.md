@@ -1,13 +1,13 @@
-# ![OrecchietTetris](assets/menu_screen_logo.png)
+# ![OrecchietTetris](OrecchietTetris/assets/menu_screen_logo.png)
 
 An exact copy of the Tetris game, with Apulian elements. Built as a Software Engineering university project.
 
 ## Requirements
 
 - Python >= 3.11
+- [Poetry](https://python-poetry.org/) (dependency manager)
 - [Kivy](https://kivy.org/) >= 2.3 (installed automatically by Poetry)
 - Node >= 25 and npm >= 11.11 (for semantic-release)
-- [Poetry](https://python-poetry.org/) (dependency manager)
 
 ### In-Game keyboard controls
 
@@ -165,13 +165,13 @@ Each tetromino uses a unique block icon drawn from Apulian food imagery.
 
 | Block | Shape | Apulian Food |
 | --- | --- | --- |
-| <img src="assets/squares/1.webp" alt="Block 1" width="30"/> | I | Mozzarella |
-| <img src="assets/squares/2.webp" alt="Block 2" width="30"/> | O | Orecchietta |
-| <img src="assets/squares/3.webp" alt="Block 3" width="30"/> | T | Uva (Grape) |
-| <img src="assets/squares/4.webp" alt="Block 4" width="30"/> | S | Cime di rapa (Turnip Tops) |
-| <img src="assets/squares/5.webp" alt="Block 5" width="30"/> | Z | Frisella |
-| <img src="assets/squares/6.webp" alt="Block 6" width="30"/> | J | Cozze Tarantine (Tarantino Mussels) |
-| <img src="assets/squares/7.webp" alt="Block 7" width="30"/> | L | Focaccia |
+| <img src="OrecchietTetris/assets/squares/1.webp" alt="Block 1" width="30"/> | I | Mozzarella |
+| <img src="OrecchietTetris/assets/squares/2.webp" alt="Block 2" width="30"/> | O | Orecchietta |
+| <img src="OrecchietTetris/assets/squares/3.webp" alt="Block 3" width="30"/> | T | Uva (Grape) |
+| <img src="OrecchietTetris/assets/squares/4.webp" alt="Block 4" width="30"/> | S | Cime di rapa (Turnip Tops) |
+| <img src="OrecchietTetris/assets/squares/5.webp" alt="Block 5" width="30"/> | Z | Frisella |
+| <img src="OrecchietTetris/assets/squares/6.webp" alt="Block 6" width="30"/> | J | Cozze Tarantine (Tarantino Mussels) |
+| <img src="OrecchietTetris/assets/squares/7.webp" alt="Block 7" width="30"/> | L | Focaccia |
 
 ## Soundtrack
 
