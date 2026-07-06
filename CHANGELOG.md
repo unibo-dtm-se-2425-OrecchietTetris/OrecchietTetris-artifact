@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v1.1.0...v1.1.1) (2026-07-06)
+
+
+### Bug Fixes
+
+* rename test_kivy_controller, update license in pyproject.toml ([aba421d](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/commit/aba421daf3ad03fcb77d59afbbf6207e7707f368))
+
 # [1.1.0](https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact/compare/v1.0.0...v1.1.0) (2026-07-02)
 
 
