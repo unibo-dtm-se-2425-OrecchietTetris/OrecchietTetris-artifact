@@ -10,7 +10,7 @@ authors = [
     "Mirko de Cillis <mirko.decillis@studio.unibo.it>",
     "Lorenza Pennisi <lorenza.pennisi@studio.unibo.it>",
 ]
-license = "Apache 2.0"
+license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact"
 repository = "https://github.com/unibo-dtm-se-2425-OrecchietTetris/OrecchietTetris-artifact"
